@@ -22,13 +22,13 @@ extern float tension_bat ;
 #define M2_INB 15
 #define channel_2 1
 // Encodeur + Parametre physique du robot
-#define ENTRAXE 110.0
-#define LARGEUR_ROBOT_mm 225.0
+#define ENTRAXE 55.0
+#define LARGEUR_ROBOT_mm 60.0
 #define TIC_PER_TOUR 2048.0
 #define RESOLUTION_ROUE_CODEUSE 10.0
 #define COEFF_ROUE_DROITE 1.0
 #define COEFF_ROUE_GAUCHE 1.0
-#define SIZE_WHEEL_DIAMETER_mm 50.0
+#define SIZE_WHEEL_DIAMETER_mm 43.0
 extern float perimetre_robot;
 
 extern double theta_robot_prec;
