@@ -18,8 +18,8 @@ extern float tension_bat ;
 #define channel_1 0
 // Moteur Gauche
 #define PWM_2 18
-#define M2_INA 16
-#define M2_INB 15
+#define M2_INA 15
+#define M2_INB 16
 #define channel_2 1
 // Encodeur + Parametre physique du robot
 #define ENTRAXE 55.0
@@ -65,8 +65,8 @@ extern double consigne_odo_y_prec;
 extern double odo_dist_gauche;
 extern double odo_dist_droit;
 
-#define PIN_ENCODEUR_1 23
-#define PIN_ENCODEUR_2 22
+#define PIN_ENCODEUR_1 34
+#define PIN_ENCODEUR_2 35
 
 #define PIN_ENCODEUR_3 36
 #define PIN_ENCODEUR_4 39
@@ -100,7 +100,7 @@ extern Ordre_deplacement liste;
 
 
 //************Asservissement ROUE FOLLE EN TICK */
-#define SPEED_TORTUE 45
+#define SPEED_TORTUE 1500
 #define SPEED_NORMAL 60
 #define SPEED_ULTRA  100
 extern float coeff_P_roue_folle_tick_gauche;
@@ -251,7 +251,7 @@ typedef struct CANMessage
   bool rtr = false;
   uint32_t id = 0;
   uint8_t lenght = 0;
-  uint8_t data[8] = {0};
+  uint16_t data[8] = {0};
 } CANMessage;
 extern CANMessage rxMsg; // data received by CAN to control the robot
 extern int etat_lecture_can;

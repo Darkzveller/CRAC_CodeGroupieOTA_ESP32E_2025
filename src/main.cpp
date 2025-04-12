@@ -7,7 +7,7 @@
 #include "ASSERVISSEMENT.h"
 #include "MOUVEMENT.h"
 #include "ID_CAN.h"
-#include "CAN_ESP32E.h"
+// #include "CAN_ESP32E.h"
 #include "USE_FUNCTION.h"
 
 float rectificateur_coeeff = 0;
@@ -40,15 +40,14 @@ void controle(void *parameters)
     {
         read_x_y_theta();
         // recalage();
-        /*switch (liste.general_purpose)
+        switch (liste.general_purpose)
         {
         case TYPE_DEPLACEMENT_LIGNE_DROITE:
-            liste.vitesse_croisiere = SPEED_NORMAL;
             Serial.printf("TYPE_DEPLACEMENT_LIGNE_DROITE ");
             ligne_droite(liste.distance, liste.vitesse_croisiere);
             if (return_flag_asser_roue())
             {
-                sendCANMessage(ACKNOWLEDGE_BASE_ROULANTE, 0, 0, 8, TYPE_DEPLACEMENT_LIGNE_DROITE, 0, 0, 0, 0, 0, 0, 0);
+                // sendCANMessage(ACKNOWLEDGE_BASE_ROULANTE, 0, 0, 8, TYPE_DEPLACEMENT_LIGNE_DROITE, 0, 0, 0, 0, 0, 0, 0);
                 liste.general_purpose = TYPE_DEPLACEMENT_IMMOBILE;
             }
 
@@ -57,13 +56,12 @@ void controle(void *parameters)
 
             // Serial.printf("TYPE_DEPLACEMENT_ROTATION ");
 
-            liste.vitesse_croisiere = SPEED_NORMAL;
             rotation(liste.angle, liste.vitesse_croisiere);
 
             if (return_flag_asser_roue())
             {
                 consigne_theta_prec = degrees(theta_robot);
-                sendCANMessage(ACKNOWLEDGE_BASE_ROULANTE, 0, 0, 8, TYPE_DEPLACEMENT_ROTATION, 0, 0, 0, 0, 0, 0, 0);
+                // sendCANMessage(ACKNOWLEDGE_BASE_ROULANTE, 0, 0, 8, TYPE_DEPLACEMENT_ROTATION, 0, 0, 0, 0, 0, 0, 0);
                 liste.general_purpose = TYPE_DEPLACEMENT_IMMOBILE;
             }
             break;
@@ -72,26 +70,16 @@ void controle(void *parameters)
             consigne_position_gauche = consigne_odo_gauche_prec;
             // Serial.printf(" TYPE_DEPLACEMENT_IMMOBILE");
             liste.general_purpose = TYPE_VIDE;
-            sendCANMessage(ACKNOWLEDGE_BASE_ROULANTE, 0, 0, 8, TYPE_DEPLACEMENT_IMMOBILE, 0, 0, 0, 0, 0, 0, 0);
+            // sendCANMessage(ACKNOWLEDGE_BASE_ROULANTE, 0, 0, 8, TYPE_DEPLACEMENT_IMMOBILE, 0, 0, 0, 0, 0, 0, 0);
 
             break;
-        // case TYPE_DEPLACEMENT_X_Y_THETA:
-        //     // Serial.printf(" TYPE_DEPLACEMENT_X_Y_THETA ");
-        //     x_y_theta(liste.x, liste.y, liste.theta, SPEED_TORTUE);
-
-        //     if (etat_x_y_theta == -1)
-        //     {
-        //         sendCANMessage(ACKNOWLEDGE_BASE_ROULANTE, 0, 0, 8, TYPE_DEPLACEMENT_X_Y_THETA, 0, 0, 0, 0, 0, 0, 0);
-        //         liste.general_purpose = TYPE_DEPLACEMENT_IMMOBILE;
-        //     }
-        //     break;
         case TYPE_DEPLACEMENT_X_Y_POLAIRE:
             // Serial.printf(" TYPE_DEPLACEMENT_X_Y_POLAIRE ");
             asser_polaire_tick(liste.x_polaire, liste.y_polaire, 0, liste.nbr_passage = true);
 
             if (flag_fin_mvt)
             {
-                sendCANMessage(ACKNOWLEDGE_BASE_ROULANTE, 0, 0, 8, TYPE_DEPLACEMENT_X_Y_POLAIRE, 0, 0, 0, 0, 0, 0, 0);
+                // sendCANMessage(ACKNOWLEDGE_BASE_ROULANTE, 0, 0, 8, TYPE_DEPLACEMENT_X_Y_POLAIRE, 0, 0, 0, 0, 0, 0, 0);
                 liste.general_purpose = TYPE_DEPLACEMENT_IMMOBILE;
             }
             break;
@@ -107,9 +95,12 @@ void controle(void *parameters)
         default:
             break;
         }
-*/
-        asservissement_roue_folle_droite_tick(consigne_position_droite, odo_tick_droit);
-        asservissement_roue_folle_gauche_tick(consigne_position_gauche, odo_tick_gauche);
+
+        // asservissement_roue_folle_droite_tick(consigne_position_droite +=60, odo_tick_droit);
+        // asservissement_roue_folle_gauche_tick(consigne_position_gauche +=60, odo_tick_gauche);
+
+        moteur_droit( 4095,false);
+        moteur_gauche(4095,false);
         flag_controle = 1;
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(Te));
     }
@@ -134,7 +125,7 @@ void bus_can(void *parameters)
     xLastWakeTime = xTaskGetTickCount();
     while (1)
     {
-        readCANMessage();
+        // readCANMessage();
 
         // // Attendre la fin du mouvement avant de passer à l'ordre suivant
         // if (flag_fin_mvt)
@@ -196,27 +187,6 @@ void bus_can(void *parameters)
 
             break;
 
-            // case XYTHETA:
-
-            //     liste.general_purpose = TYPE_DEPLACEMENT_X_Y_THETA;
-            //     liste.x = fusion_octet(rxMsg.data[0], rxMsg.data[1]);
-            //     liste.y = fusion_octet(rxMsg.data[2], rxMsg.data[3]);
-            //     liste.theta = fusion_octet(rxMsg.data[4], rxMsg.data[5]);
-
-            //     // liste.vitesse_croisiere = rxMsg.data[3];
-            //     lauch_flag_asser_roue(true);
-
-            //     rxMsg.id = 0;
-
-            //     // Serial.printf(" XYTHETA ");
-            //     // Serial.printf(" liste.x %f ", liste.x);
-            //     // Serial.printf(" liste.y %f ", liste.y);
-            //     // Serial.printf(" liste.theta %f ", liste.theta);
-
-            //     // Serial.println();
-
-            //     break;
-
         case POLAIRE:
 
             liste.general_purpose = TYPE_DEPLACEMENT_X_Y_POLAIRE;
@@ -234,103 +204,7 @@ void bus_can(void *parameters)
             Serial.println();
 
             break;
-        case CELLULE_BAT:
-            // Ne sert a rien
-            break;
-        case BATT_MAIN:
-
-            Serial.printf("BATT_Main ");
-            Serial.printf(" tension %.2f V", conversion_4char_to_float(&rxMsg.data[0]));
-            Serial.printf(" courant %.2f mA", conversion_4char_to_float(&rxMsg.data[4]));
-            Serial.println();
-
-            rxMsg.id = 0;
-
-            break;
-        case BATT_1:
-            tension = conversion_4char_to_float(&rxMsg.data[0]);
-            courant = conversion_4char_to_float(&rxMsg.data[4]);
-
-            if (tension > 9.5)
-            {
-                rectificateur_coeeff = 13.0 / tension;
-                Serial.printf("BATT_1 ");
-                Serial.printf(" tension %.2f V", tension);
-                Serial.printf(" courant %.2f mA", courant);
-                Serial.println();
-            }
-            rxMsg.id = 0;
-
-            break;
-        case BATT_2:
-            tension = conversion_4char_to_float(&rxMsg.data[0]);
-            courant = conversion_4char_to_float(&rxMsg.data[4]);
-
-            if (tension > 9.5)
-            {
-                rectificateur_coeeff = 13.0 / tension;
-                Serial.printf(" BATT_2 ");
-                Serial.printf(" tension %.2f V", tension);
-                Serial.printf(" courant %.2f mA", courant);
-                Serial.println();
-            }
-
-            // Serial.println();
-            rxMsg.id = 0;
-
-            break;
-        case BATT_3:
-
-            tension = conversion_4char_to_float(&rxMsg.data[0]);
-            courant = conversion_4char_to_float(&rxMsg.data[4]);
-
-            if (tension > 9.5)
-            {
-                rectificateur_coeeff = 13.0 / tension;
-                Serial.printf(" BATT_3 ");
-                Serial.printf(" tension %.2f V", tension);
-                Serial.printf(" courant %.2f mA", courant);
-                Serial.println();
-            }
-
-            rxMsg.id = 0;
-
-            break;
-
-        case INTERRUPTEUR_BATT1:
-
-            Serial.printf(" INTERRUPTEUR_BATT1 ");
-            Serial.println();
-            rxMsg.id = 0;
-
-            break;
-        case INTERRUPTEUR_BATT2:
-
-            Serial.printf(" INTERRUPTEUR_BATT2 ");
-            Serial.println();
-            rxMsg.id = 0;
-
-            break;
-        case INTERRUPTEUR_BATT3:
-
-            Serial.printf("  INTERRUPTEUR_BATT3 ");
-            Serial.println();
-            rxMsg.id = 0;
-
-            break;
-
         case 0:
-            // {
-            //     int16_t odo_x_int = static_cast<int16_t>(odo_x * 10);
-            //     int16_t odo_y_int = static_cast<int16_t>(odo_y * 10);
-
-            //     uint8_t lowByte_x = odo_x_int & 0xFF;
-            //     uint8_t highByte_x = (odo_x_int >> 8) & 0xFF;
-            //     uint8_t lowByte_y = odo_y_int & 0xFF;
-            //     uint8_t highByte_y = (odo_y_int >> 8) & 0xFF;
-            //     // sendCANMessage(ODO_SEND, 0, 0, 8, highByte_x, lowByte_x, highByte_y, lowByte_y, 0, 0, 0, 0);
-            // }
-
             break;
 
         default:
@@ -355,7 +229,7 @@ void setup()
     // Initialisation des encodeurs
     setup_encodeur();
     // Initialisation du Can
-    setupCAN(1000E3);
+    // setupCAN(1000E3);
 
     // Boucle jusqu'à ce qu'un client soit connecté via le port série WiFi
     // while (!SerialWIFI.available())
@@ -405,13 +279,12 @@ void loop()
 {
     if (flag_controle)
     {
-
         Serial.printf(" Odo x %.3f ", odo_x);
         Serial.printf(" odo_y %.3f ", odo_y);
         Serial.printf(" teheta %.3f ", degrees(theta_robot));
         // Serial.printf(" delta_droit %.0f ", delta_droit);
-        // Serial.printf(" consigne_position_droite %.0f ", consigne_position_droite);
-        // Serial.printf(" consigne_position_gauche %.0f ", consigne_position_gauche);
+        Serial.printf(" consigne_position_droite %.0f ", consigne_position_droite);
+        Serial.printf(" consigne_position_gauche %.0f ", consigne_position_gauche);
 
         Serial.printf(" odo_tick_droit %.0f ", odo_tick_droit);
         Serial.printf(" odo_tick_gauche %.0f ", odo_tick_gauche);
@@ -425,8 +298,8 @@ void loop()
         // // // Serial.printf(" vitesse robo %f ", vitesse_rob);
 
         // // Serial.printf(" etat_x_y_theta x %d ", etat_x_y_theta);
-        // Serial.print("Etat actuel : " + toStringG(etat_actuel_vit_roue_folle_gauche));
-        // Serial.print(" " + toStringD(etat_actuel_vit_roue_folle_droite));
+        Serial.print("Etat actuel : " + toStringG(etat_actuel_vit_roue_folle_gauche));
+        Serial.print(" " + toStringD(etat_actuel_vit_roue_folle_droite));
         Serial.println();
         flag_controle = 0;
     }
@@ -459,91 +332,103 @@ void reception(char ch)
             commande = chaine.substring(0, index);
             valeur = chaine.substring(index + 1, length);
         }
+        if (commande == "ROTATION")
+        {
+            int8_t sens = 0;
+            cmd = valeur.toInt();
+            if (cmd > 0)
+            {
+                if (cmd >= 1)
+                {
+                    sens = 1;
+                }
+            }
+            else if (cmd < 0)
+            {
+                if (cmd <= -1)
+                {
+                    sens = -1;
+                }
+            }
+            // cmd = fabs(cmd);
+            cmd = cmd;
+            uint8_t lowByte = cmd & 0xFF;         // Octet de poids faible
+            uint8_t highByte = (cmd >> 8) & 0xFF; // Octet de poids fort
+
+            TelnetStream.println();
+
+            TelnetStream.printf("Send command Rotation with cons");
+            TelnetStream.printf(" cmd %d", cmd);
+            TelnetStream.printf(" sens %d", sens);
+            TelnetStream.println();
+
+            Serial.println();
+            Serial.printf("Send command Rotation with cons");
+            Serial.printf(" cmd %d", cmd);
+            Serial.printf(" sens %d", sens);
+            Serial.println();
+
+            rxMsg.id = ROTATION;
+            rxMsg.data[0] = highByte;
+            rxMsg.data[1] = lowByte;
+            rxMsg.data[2] = SPEED_TORTUE;
+
+            // sendCANMessage(ROTATION, 0, 0, 8, highByte, lowByte, 0x7B, 0, 0, 0, 0, 0);
+        }
+        if (commande == "LIGNE")
+        {
+            int8_t sens = 0;
+            cmd = valeur.toInt();
+            if (cmd > 0)
+            {
+                if (cmd >= 1)
+                {
+                    sens = 1;
+                }
+            }
+            else if (cmd < 0)
+            {
+                if (cmd <= -1)
+                {
+                    sens = -1;
+                }
+            }
+            // cmd = fabs(cmd);
+            cmd = cmd;
+            uint8_t lowByte = cmd & 0xFF;         // Octet de poids faible
+            uint8_t highByte = (cmd >> 8) & 0xFF; // Octet de poids fort
+            TelnetStream.println();
+            TelnetStream.printf("Send command LIGNE with cons");
+            TelnetStream.printf(" cmd %d", cmd);
+            TelnetStream.printf(" lowByte %d", lowByte);
+            TelnetStream.printf(" highByte %d", highByte);
+
+            TelnetStream.println();
+            Serial.println();
+            Serial.printf("Send command LIGNE with cons");
+            Serial.printf(" cmd %d", cmd);
+            Serial.printf(" sens %d", sens);
+            Serial.println();
+
+            rxMsg.id = LIGNE_DROITE;
+            rxMsg.data[0] = highByte;
+            rxMsg.data[1] = lowByte;
+            rxMsg.data[2] = SPEED_TORTUE;
+
+            // sendCANMessage(LIGNE_DROITE, 0, 0, 8, highByte, lowByte, 0x7B, 0, 0, 0, 0, 0);
+        }
+
         if ((commande == "RESTART") || (commande == "restart"))
         {
             TelnetStream.println();
 
             TelnetStream.printf("Send command RESTART");
             TelnetStream.println();
-            Serial.printf("Send command RESTART \n");
-            Serial.printf("Send command OFF_1 Bat_1 ");
-            Serial.printf("Send command OFF_2 Bat_2 ");
-            Serial.printf("Send command OFF_3 Bat_3 ");
+            Serial.printf("Send command RESTART ");
             Serial.println();
-
+            rxMsg.id = ESP32_RESTART;
             // sendCANMessage(ESP32_RESTART, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-            sendCANMessage(INTERRUPTEUR_BATT1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0);
-            sendCANMessage(INTERRUPTEUR_BATT2, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0);
-            sendCANMessage(INTERRUPTEUR_BATT3, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0);
-            esp_restart();
         }
-        if ((commande == "ON1") || (commande == "on1"))
-        {
-            TelnetStream.println();
-
-            TelnetStream.printf("Send command ON_1 Bat_1 ");
-            TelnetStream.println();
-            Serial.printf("Send command ON_1 Bat_1");
-            Serial.println();
-
-            sendCANMessage(INTERRUPTEUR_BATT1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0);
-        }
-        if ((commande == "OFF1") || (commande == "off1"))
-        {
-            TelnetStream.println();
-
-            TelnetStream.printf("Send command OFF_1 Bat_1 ");
-            TelnetStream.println();
-            Serial.printf("Send command OFF_1 Bat_1");
-            Serial.println();
-
-            sendCANMessage(INTERRUPTEUR_BATT1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0);
-        }
-        if ((commande == "ON2") || (commande == "on2"))
-        {
-            TelnetStream.println();
-
-            TelnetStream.printf("Send command ON_2 Bat_2 ");
-            TelnetStream.println();
-            Serial.printf("Send command ON_2 Bat_2");
-            Serial.println();
-
-            sendCANMessage(INTERRUPTEUR_BATT2, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0);
-        }
-        if ((commande == "OFF2") || (commande == "off2"))
-        {
-            TelnetStream.println();
-
-            TelnetStream.printf("Send command OFF_2 Bat_2 ");
-            TelnetStream.println();
-            Serial.printf("Send command OFF_2 Bat_2");
-            Serial.println();
-
-            sendCANMessage(INTERRUPTEUR_BATT2, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0);
-        }
-        if ((commande == "ON3") || (commande == "on3"))
-        {
-            TelnetStream.println();
-
-            TelnetStream.printf("Send command ON_3 Bat_3 ");
-            TelnetStream.println();
-            Serial.printf("Send command ON_3 Bat_3");
-            Serial.println();
-
-            sendCANMessage(INTERRUPTEUR_BATT3, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0);
-        }
-        if ((commande == "OFF3") || (commande == "off3"))
-        {
-            TelnetStream.println();
-
-            TelnetStream.printf("Send command OFF_3 Bat_3 ");
-            TelnetStream.println();
-            Serial.printf("Send command OFF_3 Bat_3");
-            Serial.println();
-
-            sendCANMessage(INTERRUPTEUR_BATT3, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0);
-        }
-
         if (commande == "xp")
         {
             cmd = valeur.toInt();
@@ -580,7 +465,13 @@ void reception(char ch)
             Serial.printf(" cmd %d", cmd);
             Serial.println();
 
-            sendCANMessage(POLAIRE, 0, 0, 8, x_high_byte, x_low_byte, y_high_byte, y_low_byte, 0, 0, 0, 0);
+            rxMsg.data[0] = x_high_byte;
+            rxMsg.data[1] = x_low_byte;
+            rxMsg.data[2] = y_high_byte;
+            rxMsg.data[3] = y_low_byte;
+            liste.nbr_passage = rxMsg.data[4];
+
+            // sendCANMessage(POLAIRE, 0, 0, 8, x_high_byte, x_low_byte, y_high_byte, y_low_byte, 0, 0, 0, 0);
         }
 
         chaine = "";
@@ -590,7 +481,6 @@ void reception(char ch)
         chaine += ch;
     }
 }
-
 void serialEvent()
 {
     while (Serial.available() > 0) // tant qu'il y a des caractères à lire
