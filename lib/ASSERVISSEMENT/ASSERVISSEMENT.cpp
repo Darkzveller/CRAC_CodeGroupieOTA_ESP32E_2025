@@ -464,7 +464,6 @@ double regulation_vitesse_roue_folle_gauche(float cons, float Vmax_consigne)
     return consigne_dist_gauche;
 }
 
-
 bool return_flag_asser_roue()
 {
 
@@ -505,6 +504,10 @@ double asservissement_angle_correction(double consigne_angle, double observation
     else if (somme_integral_angle < -integral_limit_angle)
     {
         somme_integral_angle = -integral_limit_angle;
+    }
+    if (fabs(erreur) < 5)
+    {
+        somme_integral_angle = 0;
     }
     double integral = coeff_I_angle * somme_integral_angle;
 

@@ -7,31 +7,10 @@
 #include "ASSERVISSEMENT.h"
 #include "MOUVEMENT.h"
 #include "ID_CAN.h"
-// #include "CAN_ESP32E.h"
+#include "UART1.h"
 #include "USE_FUNCTION.h"
+#include "I2C_ESP32E.h"
 
-float rectificateur_coeeff = 0;
-// struct Ordre_deplacement
-// {
-//     int general_purpose;
-//     float angle;
-//     int sens_rotation;
-//     int16_t distance;
-//     int vitesse_croisiere;
-//     int sens_ligne_droite;
-//     float consigne_distance_recalage;
-//     int vitesse_recalage;
-//     int sens_recalage;
-//     float x;
-//     float y;
-//     float theta;
-//     float vitesse_x_y_theta;
-//     float x_polaire;
-//     float y_polaire;
-//     int nbr_passage;
-// };
-// Ordre_deplacement liste = {TYPE_DEPLACEMENT_IMMOBILE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static bool polaire_true_or_false = false;
 void controle(void *parameters)
 {
     TickType_t xLastWakeTime;
@@ -43,11 +22,14 @@ void controle(void *parameters)
         switch (liste.general_purpose)
         {
         case TYPE_DEPLACEMENT_LIGNE_DROITE:
-            Serial.printf("TYPE_DEPLACEMENT_LIGNE_DROITE ");
+            // Serial.printf("TYPE_DEPLACEMENT_LIGNE_DROITE ");
+
             ligne_droite(liste.distance, liste.vitesse_croisiere);
+            // Serial.println();
+
             if (return_flag_asser_roue())
             {
-                // sendCANMessage(ACKNOWLEDGE_BASE_ROULANTE, 0, 0, 8, TYPE_DEPLACEMENT_LIGNE_DROITE, 0, 0, 0, 0, 0, 0, 0);
+                send_message_bw16(ACKNOWLEDGE_BASE_ROULANTE, TYPE_DEPLACEMENT_LIGNE_DROITE, 0, 0, 0, 0, 0, 0, 0);
                 liste.general_purpose = TYPE_DEPLACEMENT_IMMOBILE;
             }
 
@@ -57,11 +39,12 @@ void controle(void *parameters)
             // Serial.printf("TYPE_DEPLACEMENT_ROTATION ");
 
             rotation(liste.angle, liste.vitesse_croisiere);
+            // Serial.println();
 
             if (return_flag_asser_roue())
             {
                 consigne_theta_prec = degrees(theta_robot);
-                // sendCANMessage(ACKNOWLEDGE_BASE_ROULANTE, 0, 0, 8, TYPE_DEPLACEMENT_ROTATION, 0, 0, 0, 0, 0, 0, 0);
+                send_message_bw16(ACKNOWLEDGE_BASE_ROULANTE, TYPE_DEPLACEMENT_ROTATION, 0, 0, 0, 0, 0, 0, 0);
                 liste.general_purpose = TYPE_DEPLACEMENT_IMMOBILE;
             }
             break;
@@ -70,7 +53,7 @@ void controle(void *parameters)
             consigne_position_gauche = consigne_odo_gauche_prec;
             // Serial.printf(" TYPE_DEPLACEMENT_IMMOBILE");
             liste.general_purpose = TYPE_VIDE;
-            // sendCANMessage(ACKNOWLEDGE_BASE_ROULANTE, 0, 0, 8, TYPE_DEPLACEMENT_IMMOBILE, 0, 0, 0, 0, 0, 0, 0);
+            send_message_bw16(ACKNOWLEDGE_BASE_ROULANTE, TYPE_DEPLACEMENT_IMMOBILE, 0, 0, 0, 0, 0, 0, 0);
 
             break;
         case TYPE_DEPLACEMENT_X_Y_POLAIRE:
@@ -79,7 +62,7 @@ void controle(void *parameters)
 
             if (flag_fin_mvt)
             {
-                // sendCANMessage(ACKNOWLEDGE_BASE_ROULANTE, 0, 0, 8, TYPE_DEPLACEMENT_X_Y_POLAIRE, 0, 0, 0, 0, 0, 0, 0);
+                send_message_bw16(ACKNOWLEDGE_BASE_ROULANTE, TYPE_DEPLACEMENT_X_Y_POLAIRE, 0, 0, 0, 0, 0, 0, 0);
                 liste.general_purpose = TYPE_DEPLACEMENT_IMMOBILE;
             }
             break;
@@ -96,11 +79,20 @@ void controle(void *parameters)
             break;
         }
 
-        // asservissement_roue_folle_droite_tick(consigne_position_droite +=60, odo_tick_droit);
-        // asservissement_roue_folle_gauche_tick(consigne_position_gauche +=60, odo_tick_gauche);
+        asservissement_roue_folle_droite_tick(consigne_position_droite, odo_tick_droit);
+        asservissement_roue_folle_gauche_tick(consigne_position_gauche, odo_tick_gauche);
+        Serial.println();
+        // int time = 250;
+        // int pwm = 2048*0.5;
+        // moteur_droit(pwm, false);
+        // moteur_gauche(pwm,false);
 
-        moteur_droit( 4095,false);
-        moteur_gauche(4095,false);
+        // delay(time);
+        // Serial.printf("Mot \n");
+
+        // moteur_droit(pwm, true);
+        // moteur_gauche(pwm,true);
+        // delay(time);
         flag_controle = 1;
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(Te));
     }
@@ -119,23 +111,13 @@ void odo(void *parameters)
     }
 }
 */
-void bus_can(void *parameters)
+void COMMUNICATION_WITH_BW16(void *parameters)
 {
     TickType_t xLastWakeTime;
     xLastWakeTime = xTaskGetTickCount();
     while (1)
     {
-        // readCANMessage();
-
-        // // Attendre la fin du mouvement avant de passer à l'ordre suivant
-        // if (flag_fin_mvt)
-        // {
-        //     FIFO_lecture = (FIFO_lecture + 1) % SIZE_FIFO;
-        //     flag_fin_mvt = false; // Réinitialiser le flag pour le prochain ordre
-
-        //     // vTaskDelay(pdMS_TO_TICKS(Tcan)); // Temporisation pour éviter une boucle trop rapide
-        //     // continue;                        // Retourne au début de la boucle en attendant que flag_fin_mvt soit vrai
-        // }
+        read_message_bw16();
 
         switch (rxMsg.id)
         {
@@ -165,7 +147,6 @@ void bus_can(void *parameters)
             Serial.printf(" liste.angle %f", (float)liste.angle);
             Serial.printf(" liste.vitesse_croisiere %d ", liste.vitesse_croisiere);
             Serial.println();
-
             break;
 
         case LIGNE_DROITE:
@@ -228,11 +209,11 @@ void setup()
     stop_motors();
     // Initialisation des encodeurs
     setup_encodeur();
-    // Initialisation du Can
-    // setupCAN(1000E3);
+    // Initialisation de l'UART1
+    setupUART1(1000E3);
 
     // Boucle jusqu'à ce qu'un client soit connecté via le port série WiFi
-    // while (!SerialWIFI.available())
+    // while (!TelnetStream.available())
     // {
     //     delay(500);                                             // Attente de 500 ms avant de vérifier à nouveau
     //     Serial.println("Aucun client connecté, en attente..."); // Message indiquant qu'il n'y a pas de client connecté
@@ -265,12 +246,12 @@ void setup()
     //     NULL   // descripteur
     // );
     xTaskCreate(
-        bus_can,   // nom de la fonction
-        "bus_can", // nom de la tache que nous venons de vréer
-        10000,     // taille de la pile en octet
-        NULL,      // parametre
-        9,         // tres haut niveau de priorite
-        NULL       // descripteur
+        COMMUNICATION_WITH_BW16,   // nom de la fonction
+        "COMMUNICATION_WITH_BW16", // nom de la tache que nous venons de vréer
+        10000,                     // taille de la pile en octet
+        NULL,                      // parametre
+        9,                         // tres haut niveau de priorite
+        NULL                       // descripteur
     );
 }
 
@@ -279,15 +260,18 @@ void loop()
 {
     if (flag_controle)
     {
-        Serial.printf(" Odo x %.3f ", odo_x);
-        Serial.printf(" odo_y %.3f ", odo_y);
-        Serial.printf(" teheta %.3f ", degrees(theta_robot));
-        // Serial.printf(" delta_droit %.0f ", delta_droit);
-        Serial.printf(" consigne_position_droite %.0f ", consigne_position_droite);
-        Serial.printf(" consigne_position_gauche %.0f ", consigne_position_gauche);
+        // Serial.printf(" Odo x %.3f ", odo_x);
+        // Serial.printf(" odo_y %.3f ", odo_y);
+        // Serial.printf(" teheta %.3f ", degrees(theta_robot));
 
-        Serial.printf(" odo_tick_droit %.0f ", odo_tick_droit);
-        Serial.printf(" odo_tick_gauche %.0f ", odo_tick_gauche);
+        // Serial.printf(" er_d %.3f ", convert_distance_tick_to_mm(erreur_distance));
+        // Serial.printf(" er_o %.3f ", convert_tick_to_angle_deg(erreur_orient));
+
+        // Serial.printf(" consigne_position_droite %.0f ", consigne_position_droite);
+        // Serial.printf(" consigne_position_gauche %.0f ", consigne_position_gauche);
+
+        // Serial.printf(" odo_tick_droit %.0f ", odo_tick_droit);
+        // Serial.printf(" odo_tick_gauche %.0f ", odo_tick_gauche);
 
         // Serial.printf(" delta_tick_droit %.0f ", delta_odo_tick_droit);
         // Serial.printf(" delta_tick_gauche %.0f ", delta_odo_tick_gauche);
@@ -297,14 +281,14 @@ void loop()
 
         // // // Serial.printf(" vitesse robo %f ", vitesse_rob);
 
-        // // Serial.printf(" etat_x_y_theta x %d ", etat_x_y_theta);
-        Serial.print("Etat actuel : " + toStringG(etat_actuel_vit_roue_folle_gauche));
-        Serial.print(" " + toStringD(etat_actuel_vit_roue_folle_droite));
-        Serial.println();
+        // Serial.printf(" etat_x_y_theta x %d ", etat_x_y_theta);
+        // Serial.print("Etat actuel : " + toStringG(etat_actuel_vit_roue_folle_gauche));
+        // Serial.print(" " + toStringD(etat_actuel_vit_roue_folle_droite));
+        // Serial.println();
         flag_controle = 0;
     }
 }
-
+/*
 void reception(char ch)
 {
     static int x_low_byte, x_high_byte;
@@ -373,7 +357,6 @@ void reception(char ch)
             rxMsg.data[1] = lowByte;
             rxMsg.data[2] = SPEED_TORTUE;
 
-            // sendCANMessage(ROTATION, 0, 0, 8, highByte, lowByte, 0x7B, 0, 0, 0, 0, 0);
         }
         if (commande == "LIGNE")
         {
@@ -415,7 +398,6 @@ void reception(char ch)
             rxMsg.data[1] = lowByte;
             rxMsg.data[2] = SPEED_TORTUE;
 
-            // sendCANMessage(LIGNE_DROITE, 0, 0, 8, highByte, lowByte, 0x7B, 0, 0, 0, 0, 0);
         }
 
         if ((commande == "RESTART") || (commande == "restart"))
@@ -427,7 +409,6 @@ void reception(char ch)
             Serial.printf("Send command RESTART ");
             Serial.println();
             rxMsg.id = ESP32_RESTART;
-            // sendCANMessage(ESP32_RESTART, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         }
         if (commande == "xp")
         {
@@ -464,14 +445,14 @@ void reception(char ch)
             Serial.printf("Send command yp with cons");
             Serial.printf(" cmd %d", cmd);
             Serial.println();
-
+            rxMsg.id = POLAIRE;
             rxMsg.data[0] = x_high_byte;
             rxMsg.data[1] = x_low_byte;
             rxMsg.data[2] = y_high_byte;
             rxMsg.data[3] = y_low_byte;
             liste.nbr_passage = rxMsg.data[4];
+            liste.nbr_passage = true;
 
-            // sendCANMessage(POLAIRE, 0, 0, 8, x_high_byte, x_low_byte, y_high_byte, y_low_byte, 0, 0, 0, 0);
         }
 
         chaine = "";
@@ -481,13 +462,14 @@ void reception(char ch)
         chaine += ch;
     }
 }
+*/
 void serialEvent()
 {
     while (Serial.available() > 0) // tant qu'il y a des caractères à lire
     {
         // reception(Serial.read());
         char caractere = Serial.read();
-        reception(caractere);
+        receptionWIFI(caractere);
         Serial.print(caractere);
     }
 }

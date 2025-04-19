@@ -10,21 +10,21 @@ extern float tension_bat ;
 // Déclaration des variables externes
 #define frequence 19500
 #define resolution_pwm 12
-#define POURCENT_MAX_PWM 0.75
+#define POURCENT_MAX_PWM 1
 // Moteur droit
-#define PWM_1 17
-#define M1_INA 26
-#define M1_INB 25
+#define PWM_1 33
+#define M1_INA 25
+#define M1_INB 26
 #define channel_1 0
 // Moteur Gauche
-#define PWM_2 18
-#define M2_INA 15
-#define M2_INB 16
+#define PWM_2 13
+#define M2_INA 4
+#define M2_INB 27
 #define channel_2 1
 // Encodeur + Parametre physique du robot
-#define ENTRAXE 55.0
-#define LARGEUR_ROBOT_mm 60.0
-#define TIC_PER_TOUR 2048.0
+#define ENTRAXE 40.0
+#define LARGEUR_ROBOT_mm 80.0
+#define TIC_PER_TOUR 1024.0
 #define RESOLUTION_ROUE_CODEUSE 10.0
 #define COEFF_ROUE_DROITE 1.0
 #define COEFF_ROUE_GAUCHE 1.0
@@ -68,8 +68,8 @@ extern double odo_dist_droit;
 #define PIN_ENCODEUR_1 34
 #define PIN_ENCODEUR_2 35
 
-#define PIN_ENCODEUR_3 36
-#define PIN_ENCODEUR_4 39
+#define PIN_ENCODEUR_3 39
+#define PIN_ENCODEUR_4 36
 // uint8_t  tab_encodeur_droit[2] = {23, 22};
 // uint8_t  tab_encodeur_gauche[2] = {36, 39};
 
@@ -100,9 +100,9 @@ extern Ordre_deplacement liste;
 
 
 //************Asservissement ROUE FOLLE EN TICK */
-#define SPEED_TORTUE 1500
-#define SPEED_NORMAL 60
-#define SPEED_ULTRA  100
+#define SPEED_TORTUE 15
+#define SPEED_NORMAL 35
+#define SPEED_ULTRA  80
 extern float coeff_P_roue_folle_tick_gauche;
 extern float coeff_D_roue_folle_tick_gauche;
 extern float coeff_I_roue_folle_tick_gauche;

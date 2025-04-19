@@ -2,6 +2,7 @@
 #include "Variable.h"
 #include "MOTEUR.h"
 #include "EncoderManager.h"
+#include "ID_CAN.h"
 // Je laisse le routeur choisir l'adresse IP et
 // je fixe le nom de mon réseau Wi-Fi, ce qui simplifie les démarches, notamment lors des débogages
 //  Informations de connexion WiFi
@@ -10,7 +11,7 @@
 // #define MA_FREEBOX
 // #define MON_PC
 
-const char *name_card_elec = "baseroulante";
+const char *name_card_elec = "groupie";
 // BESOIN DE ME SIMPLIFIER MA VIE
 #ifdef MON_TELEPHONE                // Nom d'hôte de la carte ESP32
 const char *ssid = "Me voici";      // SSID du réseau WiFi
@@ -32,12 +33,12 @@ void ota_handle(void *parameter)
   xLastWakeTime = xTaskGetTickCount();
   for (;;)
   {
-    // TelnetStream.printf(" Odo x %.3f ", odo_x);
-    // TelnetStream.printf(" odo_y %.3f ", odo_y);
-    // TelnetStream.printf(" teheta %.3f ", degrees(theta_robot));
-    // TelnetStream.println();
+    SerialWIFIActivites(); // Gestion des opérations OTA (vérifie si une mise à jour est en cours)
+    TelnetStream.printf(" Odo x %.3f ", odo_x);
+    TelnetStream.printf(" odo_y %.3f ", odo_y);
+    TelnetStream.printf(" teheta %.3f ", degrees(theta_robot));
+    TelnetStream.println();
 
-    // SerialWIFIActivites(); // Gestion des opérations OTA (vérifie si une mise à jour est en cours)
     ArduinoOTA.handle();
     vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(500));
   }
@@ -156,140 +157,192 @@ void setupOTA()
       1,            /* Priorité de la tâche */
       NULL);        /* Handle de la tâche (aucun ici) */
 }
-// /*
-// void receptionWIFI()
-// {
-//   if (SerialWIFI.available())
-//   {
-//     String input = SerialWIFI.readString(); // Lire la chaîne complète
-//     Serial.print("Reçu: ");
-//     Serial.println(input); // Afficher ce qui a été reçu
-//     int f = 0;
-//     // Supprimer les espaces ou caractères indésirables (comme le retour à la ligne)
-//     input.trim(); // Enlève les espaces superflus et les retours à la ligne
+void receptionWIFI(char ch)
+{
 
-//     if (input.equals("S")) // Vérifier si l'entrée est "stop"
-//     {
-//       // i = 0; // Remise à zéro de la variable
-//       SerialWIFI.println("STOP BASE ROULANTE");
-//     }
-//     if (input.equals("M")) // Vérifier si l'entrée est "start"
-//     {
-//       SerialWIFI.println("START TEST");
-//     }
-//   }
-// }
-// */
+  static int x_low_byte, x_high_byte;
+  static int y_low_byte, y_high_byte;
+  static int t_low_byte, t_high_byte;
 
-// void affichage_commande_wifi()
-// {
+  static int i = 0;
+  static String chaine = "";
+  String commande;
+  String valeur;
+  int index, length;
+  int cmd = 0;
 
-//   // SerialWIFI.println("S pour tout stopper");
-//   // SerialWIFI.println("M pour tout mettre en marche");
-// }
-// /*
-// void receptionWIFI(char ch)
-// {
+  if ((ch == 13) or (ch == 10))
+  {
+      index = chaine.indexOf(' ');
+      length = chaine.length();
+      if (index == -1)
+      {
+          commande = chaine;
+          valeur = "";
+      }
+      else
+      {
+          commande = chaine.substring(0, index);
+          valeur = chaine.substring(index + 1, length);
+      }
+      if (commande == "ROTATION")
+      {
+          int8_t sens = 0;
+          cmd = valeur.toInt();
+          if (cmd > 0)
+          {
+              if (cmd >= 1)
+              {
+                  sens = 1;
+              }
+          }
+          else if (cmd < 0)
+          {
+              if (cmd <= -1)
+              {
+                  sens = -1;
+              }
+          }
+          // cmd = fabs(cmd);
+          cmd = cmd;
+          uint8_t lowByte = cmd & 0xFF;         // Octet de poids faible
+          uint8_t highByte = (cmd >> 8) & 0xFF; // Octet de poids fort
 
-//   static int i = 0;
-//   static String chaine = "";
-//   String commande;
-//   String valeur;
-//   int index, length;
+          TelnetStream.println();
 
-//   if ((ch == 13) or (ch == 10))
-//   {
-//     index = chaine.indexOf(' ');
-//     length = chaine.length();
-//     if (index == -1)
-//     {
-//       commande = chaine;
-//       valeur = "";
-//     }
-//     else
-//     {
-//       commande = chaine.substring(0, index);
-//       valeur = chaine.substring(index + 1, length);
-//     }
-//     if (commande == "start")
-//     {
-//       flag_controle = 1;
-//       SerialWIFI.println("Start");
-//     }
-//     if (commande == "s")
-//     {
-//       flag_controle = 0;
-//       SerialWIFI.println("stop all");
-//     }
-//     if (commande == "resetO")
-//     {
-//       reset_encodeur();
-//       SerialWIFI.println("Reset encodeur");
-//     }
+          TelnetStream.printf("Send command Rotation with cons");
+          TelnetStream.printf(" cmd %d", cmd);
+          TelnetStream.printf(" sens %d", sens);
+          TelnetStream.println();
 
-//     // if (commande == "P")
-//     // {
-//     //   coeff_P_roue_folle_tick = valeur.toFloat();
-//     //   SerialWIFI.printf("P = %4.6f", coeff_P_roue_folle_tick);
-//     //   SerialWIFI.println();
-//     // }
+          Serial.println();
+          Serial.printf("Send command Rotation with cons");
+          Serial.printf(" cmd %d", cmd);
+          Serial.printf(" sens %d", sens);
+          Serial.println();
 
-//     // if (commande == "D")
-//     // {
-//     //   coeff_D_roue_folle_tick = valeur.toFloat();
-//     //   SerialWIFI.printf("D = %4.6f", coeff_D_roue_folle_tick);
-//     //   SerialWIFI.println();
-//     // }
-//     // if (commande == "I")
-//     // {
-//     //   coeff_I_roue_folle_tick = valeur.toFloat();
-//     //   SerialWIFI.printf("I = %4.6f", coeff_I_roue_folle_tick);
-//     //   SerialWIFI.println();
-//     // }
-//     if (commande == "SI")
-//     {
-//       integral_limit_roue_folle_tick = valeur.toInt();
-//       SerialWIFI.printf("SI = %4.6f", integral_limit_roue_folle_tick);
-//       SerialWIFI.println();
-//     }
-//     if (commande == "all_coeff_tick")
-//     {
-//       // SerialWIFI.printf("P = %4.3f", coeff_P_roue_folle_tick);
-//       // SerialWIFI.printf(" D = %4.3f ", coeff_D_roue_folle_tick);
-//       // SerialWIFI.printf(" I = %4.3f", coeff_I_roue_folle_tick);
-//       SerialWIFI.printf(" SI = %4.1f ", integral_limit_roue_folle_tick);
-//       SerialWIFI.println();
-//     }
+          rxMsg.id = ROTATION;
+          rxMsg.data[0] = highByte;
+          rxMsg.data[1] = lowByte;
+          rxMsg.data[2] = SPEED_NORMAL;
 
-//     // Exemple de commande possible
-//     /*
-//         if (commande == "Te")
-//         {
-//             Te = valeur.toInt();
-//         }
-//         if (commande == "Kp_moteur")
-//         {
-//             // Serial.printf("Kp_moteur");
-//             Kp_moteur = valeur.toDouble();
-//         }*/
+      }
+      if (commande == "LIGNE")
+      {
+          int8_t sens = 0;
+          cmd = valeur.toInt();
+          if (cmd > 0)
+          {
+              if (cmd >= 1)
+              {
+                  sens = 1;
+              }
+          }
+          else if (cmd < 0)
+          {
+              if (cmd <= -1)
+              {
+                  sens = -1;
+              }
+          }
+          // cmd = fabs(cmd);
+          cmd = cmd;
+          uint8_t lowByte = cmd & 0xFF;         // Octet de poids faible
+          uint8_t highByte = (cmd >> 8) & 0xFF; // Octet de poids fort
+          TelnetStream.println();
+          TelnetStream.printf("Send command LIGNE with cons");
+          TelnetStream.printf(" cmd %d", cmd);
+          TelnetStream.printf(" lowByte %d", lowByte);
+          TelnetStream.printf(" highByte %d", highByte);
 
-//     chaine = "";
-//   }
-//   else
-//   {
-//     chaine += ch;
-//   }
-// }
-// void SerialWIFIActivites()
-// {
-//   while (SerialWIFI.available() > 0) // tant qu'il y a des caractères à lire
-//   {
-//     if (justepouraffichage == 0)
-//     {
-//       SerialWIFI.println("Bien veneu dans le terminal WIFI");
-//     }
-//     justepouraffichage = 1;
+          TelnetStream.println();
+          Serial.println();
+          Serial.printf("Send command LIGNE with cons");
+          Serial.printf(" cmd %d", cmd);
+          Serial.printf(" sens %d", sens);
+          Serial.println();
 
-//     receptionWIFI(SerialWIFI.read());
-//   }
-// }*/
+          rxMsg.id = LIGNE_DROITE;
+          rxMsg.data[0] = highByte;
+          rxMsg.data[1] = lowByte;
+          rxMsg.data[2] = SPEED_NORMAL;
+
+      }
+
+      if ((commande == "RESTART") || (commande == "restart"))
+      {
+          TelnetStream.println();
+
+          TelnetStream.printf("Send command RESTART");
+          TelnetStream.println();
+          Serial.printf("Send command RESTART ");
+          Serial.println();
+          rxMsg.id = ESP32_RESTART;
+      }
+      if (commande == "xp")
+      {
+          cmd = valeur.toInt();
+
+          uint8_t lowByte = cmd & 0xFF;         // Octet de poids faible
+          uint8_t highByte = (cmd >> 8) & 0xFF; // Octet de poids fort
+          x_low_byte = lowByte;
+          x_high_byte = highByte;
+          TelnetStream.println();
+          TelnetStream.printf("Send command xp with cons");
+          TelnetStream.printf(" cmd %d", cmd);
+          TelnetStream.println();
+          Serial.println();
+          Serial.printf("Send command xp with cons");
+          Serial.printf(" cmd %d", cmd);
+          Serial.println();
+      }
+      if (commande == "yp")
+      {
+          cmd = valeur.toInt();
+
+          uint8_t lowByte = cmd & 0xFF;         // Octet de poids faible
+          uint8_t highByte = (cmd >> 8) & 0xFF; // Octet de poids fort
+          y_low_byte = lowByte;
+          y_high_byte = highByte;
+          TelnetStream.println();
+
+          TelnetStream.printf("Send command yp with cons");
+          TelnetStream.printf(" cmd %d", cmd);
+          TelnetStream.println();
+
+          Serial.println();
+          Serial.printf("Send command yp with cons");
+          Serial.printf(" cmd %d", cmd);
+          Serial.println();
+          rxMsg.id = POLAIRE;
+          rxMsg.data[0] = x_high_byte;
+          rxMsg.data[1] = x_low_byte;
+          rxMsg.data[2] = y_high_byte;
+          rxMsg.data[3] = y_low_byte;
+          liste.nbr_passage = rxMsg.data[4];
+          liste.nbr_passage = true;
+
+      }
+
+      chaine = "";
+  }
+  else
+  {
+      chaine += ch;
+  }
+}
+
+
+void SerialWIFIActivites()
+{
+  while (TelnetStream.available() > 0) // tant qu'il y a des caractères à lire
+  {
+    if (justepouraffichage == 0)
+    {
+      TelnetStream.println("Bien veneu dans le terminal WIFI");
+    }
+    justepouraffichage = 1;
+
+    receptionWIFI(TelnetStream.read());
+  }
+}

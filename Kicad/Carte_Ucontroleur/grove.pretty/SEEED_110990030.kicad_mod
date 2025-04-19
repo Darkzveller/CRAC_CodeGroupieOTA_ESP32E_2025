@@ -1,10 +1,10 @@
 (footprint "SEEED_110990030"
-	(version 20240108)
+	(version 20241229)
 	(generator "pcbnew")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(layer "F.Cu")
 	(property "Reference" "REF**"
-		(at 6.21 0.29 -90)
+		(at 6.21 0.29 270)
 		(layer "F.SilkS")
 		(uuid "6169feb3-e506-4ba2-9622-ec56725e48b3")
 		(effects
@@ -22,18 +22,6 @@
 		(effects
 			(font
 				(size 1 1)
-				(thickness 0.15)
-			)
-		)
-	)
-	(property "Footprint" ""
-		(at 0 0 0)
-		(layer "F.Fab")
-		(hide yes)
-		(uuid "ad80faaa-ba61-4f90-ab73-19051637dc96")
-		(effects
-			(font
-				(size 1.27 1.27)
 				(thickness 0.15)
 			)
 		)
@@ -110,7 +98,7 @@
 			(width 0.2)
 			(type solid)
 		)
-		(fill none)
+		(fill no)
 		(layer "F.SilkS")
 		(uuid "8a765f43-28ac-4ac5-ae8f-02d14ff1be31")
 	)
@@ -201,12 +189,12 @@
 			(width 0.2)
 			(type solid)
 		)
-		(fill none)
+		(fill no)
 		(layer "F.Fab")
 		(uuid "55eed762-d6ba-4cb7-9a84-bc757188b0b3")
 	)
 	(fp_text user "EXT"
-		(at -1.43 -2.41 0)
+		(at -1.24 4.77 0)
 		(unlocked yes)
 		(layer "User.1")
 		(uuid "cb56ec44-53c4-4409-97b4-ce19777f9864")
@@ -254,6 +242,7 @@
 		(solder_mask_margin 0.102)
 		(uuid "85123477-1a68-4600-8e78-a3f77e5b4f98")
 	)
+	(embedded_fonts no)
 	(model "${KIPRJMOD}/grove.pretty/110990030.step"
 		(offset
 			(xyz 0 0 0)
@@ -262,7 +251,7 @@
 			(xyz 1 1 1)
 		)
 		(rotate
-			(xyz -90 0 180)
+			(xyz -90 -0 -0)
 		)
 	)
 )

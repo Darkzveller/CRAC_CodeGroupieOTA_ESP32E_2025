@@ -10,7 +10,7 @@
 #define _OTA_H
 
 void setupOTA();
-void receptionWIFI();
+void receptionWIFI(char ch);
 // void affichage_commande_wifi();
-// void SerialWIFIActivites();
+void SerialWIFIActivites();
 #endif
