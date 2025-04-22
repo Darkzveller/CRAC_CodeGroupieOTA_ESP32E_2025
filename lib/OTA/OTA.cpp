@@ -132,7 +132,8 @@ void setupOTA()
   ArduinoOTA.begin();
 
   // Démarre la communication série WiFi
-  // SerialWIFI.begin();
+  TelnetStream.begin();
+  Serial.println("TelnetStream.begin");
 
   // Affiche les informations une fois prêtes
   Serial.println("Ready");
@@ -173,165 +174,160 @@ void receptionWIFI(char ch)
 
   if ((ch == 13) or (ch == 10))
   {
-      index = chaine.indexOf(' ');
-      length = chaine.length();
-      if (index == -1)
+    index = chaine.indexOf(' ');
+    length = chaine.length();
+    if (index == -1)
+    {
+      commande = chaine;
+      valeur = "";
+    }
+    else
+    {
+      commande = chaine.substring(0, index);
+      valeur = chaine.substring(index + 1, length);
+    }
+    if (commande == "ROTATION")
+    {
+      int8_t sens = 0;
+      cmd = valeur.toInt();
+      if (cmd > 0)
       {
-          commande = chaine;
-          valeur = "";
+        if (cmd >= 1)
+        {
+          sens = 1;
+        }
       }
-      else
+      else if (cmd < 0)
       {
-          commande = chaine.substring(0, index);
-          valeur = chaine.substring(index + 1, length);
+        if (cmd <= -1)
+        {
+          sens = -1;
+        }
       }
-      if (commande == "ROTATION")
+      // cmd = fabs(cmd);
+      cmd = cmd;
+      uint8_t lowByte = cmd & 0xFF;         // Octet de poids faible
+      uint8_t highByte = (cmd >> 8) & 0xFF; // Octet de poids fort
+
+      TelnetStream.println();
+
+      TelnetStream.printf("Send command Rotation with cons");
+      TelnetStream.printf(" cmd %d", cmd);
+      TelnetStream.printf(" sens %d", sens);
+      TelnetStream.println();
+
+      Serial.println();
+      Serial.printf("Send command Rotation with cons");
+      Serial.printf(" cmd %d", cmd);
+      Serial.printf(" sens %d", sens);
+      Serial.println();
+
+      rxMsg.id = ROTATION;
+      rxMsg.data[0] = highByte;
+      rxMsg.data[1] = lowByte;
+      rxMsg.data[2] = SPEED_NORMAL;
+    }
+    if (commande == "LIGNE")
+    {
+      int8_t sens = 0;
+      cmd = valeur.toInt();
+      if (cmd > 0)
       {
-          int8_t sens = 0;
-          cmd = valeur.toInt();
-          if (cmd > 0)
-          {
-              if (cmd >= 1)
-              {
-                  sens = 1;
-              }
-          }
-          else if (cmd < 0)
-          {
-              if (cmd <= -1)
-              {
-                  sens = -1;
-              }
-          }
-          // cmd = fabs(cmd);
-          cmd = cmd;
-          uint8_t lowByte = cmd & 0xFF;         // Octet de poids faible
-          uint8_t highByte = (cmd >> 8) & 0xFF; // Octet de poids fort
-
-          TelnetStream.println();
-
-          TelnetStream.printf("Send command Rotation with cons");
-          TelnetStream.printf(" cmd %d", cmd);
-          TelnetStream.printf(" sens %d", sens);
-          TelnetStream.println();
-
-          Serial.println();
-          Serial.printf("Send command Rotation with cons");
-          Serial.printf(" cmd %d", cmd);
-          Serial.printf(" sens %d", sens);
-          Serial.println();
-
-          rxMsg.id = ROTATION;
-          rxMsg.data[0] = highByte;
-          rxMsg.data[1] = lowByte;
-          rxMsg.data[2] = SPEED_NORMAL;
-
+        if (cmd >= 1)
+        {
+          sens = 1;
+        }
       }
-      if (commande == "LIGNE")
+      else if (cmd < 0)
       {
-          int8_t sens = 0;
-          cmd = valeur.toInt();
-          if (cmd > 0)
-          {
-              if (cmd >= 1)
-              {
-                  sens = 1;
-              }
-          }
-          else if (cmd < 0)
-          {
-              if (cmd <= -1)
-              {
-                  sens = -1;
-              }
-          }
-          // cmd = fabs(cmd);
-          cmd = cmd;
-          uint8_t lowByte = cmd & 0xFF;         // Octet de poids faible
-          uint8_t highByte = (cmd >> 8) & 0xFF; // Octet de poids fort
-          TelnetStream.println();
-          TelnetStream.printf("Send command LIGNE with cons");
-          TelnetStream.printf(" cmd %d", cmd);
-          TelnetStream.printf(" lowByte %d", lowByte);
-          TelnetStream.printf(" highByte %d", highByte);
-
-          TelnetStream.println();
-          Serial.println();
-          Serial.printf("Send command LIGNE with cons");
-          Serial.printf(" cmd %d", cmd);
-          Serial.printf(" sens %d", sens);
-          Serial.println();
-
-          rxMsg.id = LIGNE_DROITE;
-          rxMsg.data[0] = highByte;
-          rxMsg.data[1] = lowByte;
-          rxMsg.data[2] = SPEED_NORMAL;
-
+        if (cmd <= -1)
+        {
+          sens = -1;
+        }
       }
+      // cmd = fabs(cmd);
+      cmd = cmd;
+      uint8_t lowByte = cmd & 0xFF;         // Octet de poids faible
+      uint8_t highByte = (cmd >> 8) & 0xFF; // Octet de poids fort
+      TelnetStream.println();
+      TelnetStream.printf("Send command LIGNE with cons");
+      TelnetStream.printf(" cmd %d", cmd);
+      TelnetStream.printf(" lowByte %d", lowByte);
+      TelnetStream.printf(" highByte %d", highByte);
 
-      if ((commande == "RESTART") || (commande == "restart"))
-      {
-          TelnetStream.println();
+      TelnetStream.println();
+      Serial.println();
+      Serial.printf("Send command LIGNE with cons");
+      Serial.printf(" cmd %d", cmd);
+      Serial.printf(" sens %d", sens);
+      Serial.println();
 
-          TelnetStream.printf("Send command RESTART");
-          TelnetStream.println();
-          Serial.printf("Send command RESTART ");
-          Serial.println();
-          rxMsg.id = ESP32_RESTART;
-      }
-      if (commande == "xp")
-      {
-          cmd = valeur.toInt();
+      rxMsg.id = LIGNE_DROITE;
+      rxMsg.data[0] = highByte;
+      rxMsg.data[1] = lowByte;
+      rxMsg.data[2] = SPEED_NORMAL;
+    }
 
-          uint8_t lowByte = cmd & 0xFF;         // Octet de poids faible
-          uint8_t highByte = (cmd >> 8) & 0xFF; // Octet de poids fort
-          x_low_byte = lowByte;
-          x_high_byte = highByte;
-          TelnetStream.println();
-          TelnetStream.printf("Send command xp with cons");
-          TelnetStream.printf(" cmd %d", cmd);
-          TelnetStream.println();
-          Serial.println();
-          Serial.printf("Send command xp with cons");
-          Serial.printf(" cmd %d", cmd);
-          Serial.println();
-      }
-      if (commande == "yp")
-      {
-          cmd = valeur.toInt();
+    if ((commande == "RESTART") || (commande == "restart"))
+    {
+      TelnetStream.println();
 
-          uint8_t lowByte = cmd & 0xFF;         // Octet de poids faible
-          uint8_t highByte = (cmd >> 8) & 0xFF; // Octet de poids fort
-          y_low_byte = lowByte;
-          y_high_byte = highByte;
-          TelnetStream.println();
+      TelnetStream.printf("Send command RESTART");
+      TelnetStream.println();
+      Serial.printf("Send command RESTART ");
+      Serial.println();
+      rxMsg.id = ESP32_RESTART;
+    }
+    if (commande == "xp")
+    {
+      cmd = valeur.toInt();
 
-          TelnetStream.printf("Send command yp with cons");
-          TelnetStream.printf(" cmd %d", cmd);
-          TelnetStream.println();
+      uint8_t lowByte = cmd & 0xFF;         // Octet de poids faible
+      uint8_t highByte = (cmd >> 8) & 0xFF; // Octet de poids fort
+      x_low_byte = lowByte;
+      x_high_byte = highByte;
+      TelnetStream.println();
+      TelnetStream.printf("Send command xp with cons");
+      TelnetStream.printf(" cmd %d", cmd);
+      TelnetStream.println();
+      Serial.println();
+      Serial.printf("Send command xp with cons");
+      Serial.printf(" cmd %d", cmd);
+      Serial.println();
+    }
+    if (commande == "yp")
+    {
+      cmd = valeur.toInt();
 
-          Serial.println();
-          Serial.printf("Send command yp with cons");
-          Serial.printf(" cmd %d", cmd);
-          Serial.println();
-          rxMsg.id = POLAIRE;
-          rxMsg.data[0] = x_high_byte;
-          rxMsg.data[1] = x_low_byte;
-          rxMsg.data[2] = y_high_byte;
-          rxMsg.data[3] = y_low_byte;
-          liste.nbr_passage = rxMsg.data[4];
-          liste.nbr_passage = true;
+      uint8_t lowByte = cmd & 0xFF;         // Octet de poids faible
+      uint8_t highByte = (cmd >> 8) & 0xFF; // Octet de poids fort
+      y_low_byte = lowByte;
+      y_high_byte = highByte;
+      TelnetStream.println();
 
-      }
+      TelnetStream.printf("Send command yp with cons");
+      TelnetStream.printf(" cmd %d", cmd);
+      TelnetStream.println();
 
-      chaine = "";
+      Serial.println();
+      Serial.printf("Send command yp with cons");
+      Serial.printf(" cmd %d", cmd);
+      Serial.println();
+      rxMsg.id = POLAIRE;
+      rxMsg.data[0] = x_high_byte;
+      rxMsg.data[1] = x_low_byte;
+      rxMsg.data[2] = y_high_byte;
+      rxMsg.data[3] = y_low_byte;
+      liste.nbr_passage = rxMsg.data[4];
+      liste.nbr_passage = true;
+    }
+    chaine = "";
   }
   else
   {
-      chaine += ch;
+    chaine += ch;
   }
 }
-
 
 void SerialWIFIActivites()
 {
@@ -342,6 +338,7 @@ void SerialWIFIActivites()
       TelnetStream.println("Bien veneu dans le terminal WIFI");
     }
     justepouraffichage = 1;
+    
 
     receptionWIFI(TelnetStream.read());
   }

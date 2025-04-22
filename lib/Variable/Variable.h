@@ -2,7 +2,7 @@
 
 #ifndef Variable_H
 #define Variable_H
-extern float tension_bat ;
+extern float tension_bat;
 // Parametre FreeRTOS
 #define Te 2.5
 #define Tcan 10
@@ -51,7 +51,7 @@ extern double delta_gauche;
 
 extern double distance_parcourue;
 
-extern double vitesse_rob ;
+extern double vitesse_rob;
 extern double vitesse_rob_roue_droite;
 extern double vitesse_rob_roue_gauche;
 
@@ -77,32 +77,32 @@ extern double odo_dist_droit;
 
 struct Ordre_deplacement
 {
-    int general_purpose;
-    float angle;
-    int sens_rotation;
-    int16_t distance;
-    int vitesse_croisiere;
-    int sens_ligne_droite;
-    float consigne_distance_recalage;
-    int vitesse_recalage;
-    int sens_recalage;
-    float x;
-    float y;
-    float theta;
-    float vitesse_x_y_theta;
-    float x_polaire;
-    float y_polaire;
-    int nbr_passage;
+  int general_purpose;
+  float angle;
+  int sens_rotation;
+  int16_t distance;
+  int vitesse_croisiere;
+  int sens_ligne_droite;
+  uint8_t type_modif_x_y_theta_recalge_rien;
+  uint8_t direction_recalage;
+  uint16_t nouvelle_valeur_x_y_theta_rien;
+  uint16_t consigne_rotation_recalge;
+  float x;
+  float y;
+  float theta;
+  float vitesse_x_y_theta;
+  float x_polaire;
+  float y_polaire;
+  bool nbr_passage;
 };
 
 // Déclaration de la variable globale (définie dans `variable.cpp`)
 extern Ordre_deplacement liste;
 
-
 //************Asservissement ROUE FOLLE EN TICK */
-#define SPEED_TORTUE 15
-#define SPEED_NORMAL 35
-#define SPEED_ULTRA  80
+#define SPEED_TORTUE 25
+#define SPEED_NORMAL 40
+#define SPEED_ULTRA 80
 extern float coeff_P_roue_folle_tick_gauche;
 extern float coeff_D_roue_folle_tick_gauche;
 extern float coeff_I_roue_folle_tick_gauche;
@@ -205,37 +205,36 @@ extern float somme_erreur_freinage_roue_folle_gauche;
 extern float erreur_prec_freinage_roue_folle_gauche;
 //************************Asser Correction d'angle */
 
-extern double coeff_P_angle ;           
-extern double coeff_I_angle ;         
-extern double coeff_D_angle ;           
-extern double integral_limit_angle ; 
+extern double coeff_P_angle;
+extern double coeff_I_angle;
+extern double coeff_D_angle;
+extern double integral_limit_angle;
 // Variables globales pour le PID
-extern double erreur_prec_angle ;    // Erreur précédente
+extern double erreur_prec_angle;    // Erreur précédente
 extern double somme_integral_angle; // Somme des erreurs pour le calcul intégral
-extern double correction ;
+extern double correction;
 
 //************************Mouvement */
-extern int sens ;
+extern int sens;
 
 extern int etat_x_y_theta;
 extern double theta_premiere_rotation;
 extern double theta_deuxieme_rotation;
-extern float consigne_regulation_moyenne ;
+extern float consigne_regulation_moyenne;
 
 //************************Polaire en tick */
-extern float erreur_distance ;
-extern float erreur_orient ;
-extern float consigne_dist_polaire_tick_max ;
-extern float coeff_rot_polaire_tick ;
-extern float coeff_dist_polaire_tick ;
-extern float consigne_rot_polaire_tick ;
+extern float erreur_distance;
+extern float erreur_orient;
+extern float consigne_dist_polaire_tick_max;
+extern float coeff_rot_polaire_tick;
+extern float coeff_dist_polaire_tick;
+extern float consigne_rot_polaire_tick;
 extern float consigne_dist_polaire_tick;
 
-extern float coeff_decc_distance_polaire_tick ;
+extern float coeff_decc_distance_polaire_tick;
 extern float distance_decl_polaire_tick;
 
 extern bool calcul_decl_polaire_tick;
-
 
 //***********LOOP******************* */
 
@@ -267,7 +266,7 @@ extern signed char FIFO_max_occupation;
 #define TYPE_DEPLACEMENT_X_Y_THETA 4
 #define TYPE_DEPLACEMENT_RECALAGE 5
 #define TYPE_VIDE 6
-#define TYPE_DEPLACEMENT_X_Y_POLAIRE 7 
+#define TYPE_DEPLACEMENT_X_Y_POLAIRE 7
 
 extern bool flag_fin_mvt;
 

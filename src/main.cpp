@@ -18,7 +18,6 @@ void controle(void *parameters)
     while (1)
     {
         read_x_y_theta();
-        // recalage();
         switch (liste.general_purpose)
         {
         case TYPE_DEPLACEMENT_LIGNE_DROITE:
@@ -66,6 +65,25 @@ void controle(void *parameters)
                 liste.general_purpose = TYPE_DEPLACEMENT_IMMOBILE;
             }
             break;
+        case TYPE_DEPLACEMENT_RECALAGE:
+            // Serial.printf(" TYPE_DEPLACEMENT_RECALAGE ");
+
+            if (recalage(liste.direction_recalage, liste.type_modif_x_y_theta_recalge_rien, liste.nouvelle_valeur_x_y_theta_rien, liste.consigne_rotation_recalge))
+            {
+                consigne_odo_droite_prec = odo_tick_droit;
+                consigne_odo_gauche_prec = odo_tick_gauche;
+                send_message_bw16(ACKNOWLEDGE_BASE_ROULANTE, TYPE_DEPLACEMENT_RECALAGE, 0, 0, 0, 0, 0, 0, 0);
+                liste.general_purpose = TYPE_DEPLACEMENT_IMMOBILE;
+                // Serial.printf(" Odo x %.3f ", odo_x);
+                // Serial.printf(" odo_y %.3f ", odo_y);
+                // Serial.printf(" teheta %.3f ", degrees(theta_robot));
+                // Serial.printf(" consigne_position_droite %.0f ", consigne_position_droite);
+                // Serial.printf(" consigne_position_gauche %.0f ", consigne_position_gauche);
+                // Serial.printf(" odo_tick_droit %.0f ", odo_tick_droit);
+                // Serial.printf(" odo_tick_gauche %.0f ", odo_tick_gauche);
+                // Serial.println();
+             }
+            break;
 
         case TYPE_VIDE:
             // Serial.printf(" TYPE_VIDE ");
@@ -81,7 +99,7 @@ void controle(void *parameters)
 
         asservissement_roue_folle_droite_tick(consigne_position_droite, odo_tick_droit);
         asservissement_roue_folle_gauche_tick(consigne_position_gauche, odo_tick_gauche);
-        Serial.println();
+        // Serial.println();
         // int time = 250;
         // int pwm = 2048*0.5;
         // moteur_droit(pwm, false);
@@ -118,7 +136,18 @@ void COMMUNICATION_WITH_BW16(void *parameters)
     while (1)
     {
         read_message_bw16();
+    // static int mlk = 0;
+    // if (mlk==0){
 
+    //     mlk = 1;
+    //     liste.general_purpose = TYPE_DEPLACEMENT_RECALAGE;
+    //     liste.direction_recalage = 1;
+    //     liste.type_modif_x_y_theta_recalge_rien = 1;
+    //     liste.nouvelle_valeur_x_y_theta_rien = 300;
+    //     liste.consigne_rotation_recalge = 0;
+
+
+    // }
         switch (rxMsg.id)
         {
 
@@ -185,6 +214,24 @@ void COMMUNICATION_WITH_BW16(void *parameters)
             Serial.println();
 
             break;
+        case RECALAGE:
+
+            liste.general_purpose = TYPE_DEPLACEMENT_RECALAGE;
+            liste.direction_recalage = rxMsg.data[0];
+            liste.type_modif_x_y_theta_recalge_rien = rxMsg.data[1];
+            liste.nouvelle_valeur_x_y_theta_rien = fusion_octet(rxMsg.data[2], rxMsg.data[3]);
+            liste.consigne_rotation_recalge = convert_angle_deg_to_tick(fusion_octet(rxMsg.data[4], rxMsg.data[5]));
+
+            rxMsg.id = 0;
+            Serial.printf(" RECALAGE ");
+            Serial.printf(" liste.direction_recalage %d ", liste.direction_recalage);
+            Serial.printf(" liste.type_modif_x_y_theta_recalge_rien %d ", liste.type_modif_x_y_theta_recalge_rien);
+            Serial.printf(" liste.nouvelle_valeur_x_y_theta_rien %d ", liste.nouvelle_valeur_x_y_theta_rien);
+            Serial.printf(" liste.consigne_rotation_recalge %d ", liste.consigne_rotation_recalge);
+
+            Serial.println();
+
+            break;
         case 0:
             break;
 
@@ -203,7 +250,7 @@ void setup()
     Serial.begin(115200);
     // Serial.println("Booting with OTA"); // Message indiquant le démarrage avec OTA
     // Appel à la fonction de configuration OTA (non définie dans ce code, mais probablement ailleurs)
-    // setupOTA();
+    setupOTA();
     // Initialisation des moteurs
     setup_motors();
     stop_motors();
@@ -226,7 +273,7 @@ void setup()
     // Serial.printf("avncement_droite enter : %.0f\n", avncement_droite);
 
     reset_encodeur();
-    delay(500);
+    delay(1500);
     reset_encodeur();
 
     xTaskCreate(
@@ -260,9 +307,13 @@ void loop()
 {
     if (flag_controle)
     {
-        // Serial.printf(" Odo x %.3f ", odo_x);
-        // Serial.printf(" odo_y %.3f ", odo_y);
-        // Serial.printf(" teheta %.3f ", degrees(theta_robot));
+        Serial.printf(" Odo x %.3f ", odo_x);
+        Serial.printf(" odo_y %.3f ", odo_y);
+        Serial.printf(" teheta %.3f ", degrees(theta_robot));
+        // Serial.printf(" direction_recalage %d ", liste.direction_recalage);
+        // Serial.printf(" type_modif_x_y_theta_recalge_rien %d ", liste.type_modif_x_y_theta_recalge_rien);
+        // Serial.printf(" nouvelle_valeur_x_y_theta_rien %d ", liste.nouvelle_valeur_x_y_theta_rien);
+        // Serial.printf(" consigne_rotation_recalge %d ", liste.consigne_rotation_recalge);
 
         // Serial.printf(" er_d %.3f ", convert_distance_tick_to_mm(erreur_distance));
         // Serial.printf(" er_o %.3f ", convert_tick_to_angle_deg(erreur_orient));
@@ -284,185 +335,11 @@ void loop()
         // Serial.printf(" etat_x_y_theta x %d ", etat_x_y_theta);
         // Serial.print("Etat actuel : " + toStringG(etat_actuel_vit_roue_folle_gauche));
         // Serial.print(" " + toStringD(etat_actuel_vit_roue_folle_droite));
-        // Serial.println();
+        Serial.println();
         flag_controle = 0;
     }
 }
-/*
-void reception(char ch)
-{
-    static int x_low_byte, x_high_byte;
-    static int y_low_byte, y_high_byte;
-    static int t_low_byte, t_high_byte;
 
-    static int i = 0;
-    static String chaine = "";
-    String commande;
-    String valeur;
-    int index, length;
-    int cmd = 0;
-
-    if ((ch == 13) or (ch == 10))
-    {
-        index = chaine.indexOf(' ');
-        length = chaine.length();
-        if (index == -1)
-        {
-            commande = chaine;
-            valeur = "";
-        }
-        else
-        {
-            commande = chaine.substring(0, index);
-            valeur = chaine.substring(index + 1, length);
-        }
-        if (commande == "ROTATION")
-        {
-            int8_t sens = 0;
-            cmd = valeur.toInt();
-            if (cmd > 0)
-            {
-                if (cmd >= 1)
-                {
-                    sens = 1;
-                }
-            }
-            else if (cmd < 0)
-            {
-                if (cmd <= -1)
-                {
-                    sens = -1;
-                }
-            }
-            // cmd = fabs(cmd);
-            cmd = cmd;
-            uint8_t lowByte = cmd & 0xFF;         // Octet de poids faible
-            uint8_t highByte = (cmd >> 8) & 0xFF; // Octet de poids fort
-
-            TelnetStream.println();
-
-            TelnetStream.printf("Send command Rotation with cons");
-            TelnetStream.printf(" cmd %d", cmd);
-            TelnetStream.printf(" sens %d", sens);
-            TelnetStream.println();
-
-            Serial.println();
-            Serial.printf("Send command Rotation with cons");
-            Serial.printf(" cmd %d", cmd);
-            Serial.printf(" sens %d", sens);
-            Serial.println();
-
-            rxMsg.id = ROTATION;
-            rxMsg.data[0] = highByte;
-            rxMsg.data[1] = lowByte;
-            rxMsg.data[2] = SPEED_TORTUE;
-
-        }
-        if (commande == "LIGNE")
-        {
-            int8_t sens = 0;
-            cmd = valeur.toInt();
-            if (cmd > 0)
-            {
-                if (cmd >= 1)
-                {
-                    sens = 1;
-                }
-            }
-            else if (cmd < 0)
-            {
-                if (cmd <= -1)
-                {
-                    sens = -1;
-                }
-            }
-            // cmd = fabs(cmd);
-            cmd = cmd;
-            uint8_t lowByte = cmd & 0xFF;         // Octet de poids faible
-            uint8_t highByte = (cmd >> 8) & 0xFF; // Octet de poids fort
-            TelnetStream.println();
-            TelnetStream.printf("Send command LIGNE with cons");
-            TelnetStream.printf(" cmd %d", cmd);
-            TelnetStream.printf(" lowByte %d", lowByte);
-            TelnetStream.printf(" highByte %d", highByte);
-
-            TelnetStream.println();
-            Serial.println();
-            Serial.printf("Send command LIGNE with cons");
-            Serial.printf(" cmd %d", cmd);
-            Serial.printf(" sens %d", sens);
-            Serial.println();
-
-            rxMsg.id = LIGNE_DROITE;
-            rxMsg.data[0] = highByte;
-            rxMsg.data[1] = lowByte;
-            rxMsg.data[2] = SPEED_TORTUE;
-
-        }
-
-        if ((commande == "RESTART") || (commande == "restart"))
-        {
-            TelnetStream.println();
-
-            TelnetStream.printf("Send command RESTART");
-            TelnetStream.println();
-            Serial.printf("Send command RESTART ");
-            Serial.println();
-            rxMsg.id = ESP32_RESTART;
-        }
-        if (commande == "xp")
-        {
-            cmd = valeur.toInt();
-
-            uint8_t lowByte = cmd & 0xFF;         // Octet de poids faible
-            uint8_t highByte = (cmd >> 8) & 0xFF; // Octet de poids fort
-            x_low_byte = lowByte;
-            x_high_byte = highByte;
-            TelnetStream.println();
-            TelnetStream.printf("Send command xp with cons");
-            TelnetStream.printf(" cmd %d", cmd);
-            TelnetStream.println();
-            Serial.println();
-            Serial.printf("Send command xp with cons");
-            Serial.printf(" cmd %d", cmd);
-            Serial.println();
-        }
-        if (commande == "yp")
-        {
-            cmd = valeur.toInt();
-
-            uint8_t lowByte = cmd & 0xFF;         // Octet de poids faible
-            uint8_t highByte = (cmd >> 8) & 0xFF; // Octet de poids fort
-            y_low_byte = lowByte;
-            y_high_byte = highByte;
-            TelnetStream.println();
-
-            TelnetStream.printf("Send command yp with cons");
-            TelnetStream.printf(" cmd %d", cmd);
-            TelnetStream.println();
-
-            Serial.println();
-            Serial.printf("Send command yp with cons");
-            Serial.printf(" cmd %d", cmd);
-            Serial.println();
-            rxMsg.id = POLAIRE;
-            rxMsg.data[0] = x_high_byte;
-            rxMsg.data[1] = x_low_byte;
-            rxMsg.data[2] = y_high_byte;
-            rxMsg.data[3] = y_low_byte;
-            liste.nbr_passage = rxMsg.data[4];
-            liste.nbr_passage = true;
-
-        }
-
-        chaine = "";
-    }
-    else
-    {
-        chaine += ch;
-    }
-}
-*/
 void serialEvent()
 {
     while (Serial.available() > 0) // tant qu'il y a des caractères à lire

@@ -76,7 +76,7 @@ void ligne_droite(int consigne, int vitesse)
 void asser_polaire_tick(float coordonnee_x, float coordonnee_y, float theta_cons, bool nbr_passage)
 {
     erreur_distance = convert_distance_mm_to_tick(sqrt(pow(coordonnee_x - odo_x, 2) + pow(coordonnee_y - odo_y, 2))); // On détermine la distance restante a parcourir
-    erreur_orient = atan2(coordonnee_y - odo_y, coordonnee_x - odo_x) - theta_robot; // On détermine l'angle a parcour pour arriver a destination
+    erreur_orient = atan2(coordonnee_y - odo_y, coordonnee_x - odo_x) - theta_robot;                                  // On détermine l'angle a parcour pour arriver a destination
     erreur_orient = normaliser_angle_rad(erreur_orient);
     erreur_orient = convert_angle_radian_to_tick(erreur_orient);
     erreur_orient = constrain(erreur_orient, -1500, 1500);
@@ -93,8 +93,8 @@ void asser_polaire_tick(float coordonnee_x, float coordonnee_y, float theta_cons
         flag_fin_mvt = true;
         calcul_decl_polaire_tick = false;
     }
-    consigne_position_gauche = odo_tick_gauche +  SPEED_ULTRA + coeff_rot_polaire_tick * consigne_rot_polaire_tick; // commande en tick qu'on souhaite atteindre
-    consigne_position_droite = odo_tick_droit  +  SPEED_ULTRA - coeff_rot_polaire_tick * consigne_rot_polaire_tick;  // commande en tick qu'on souhaite atteindre
+    consigne_position_gauche = odo_tick_gauche + SPEED_ULTRA + coeff_rot_polaire_tick * consigne_rot_polaire_tick; // commande en tick qu'on souhaite atteindre
+    consigne_position_droite = odo_tick_droit + SPEED_ULTRA - coeff_rot_polaire_tick * consigne_rot_polaire_tick;  // commande en tick qu'on souhaite atteindre
 
     // Serial.printf(" cs x %.1f ", coordonnee_x);
     // Serial.printf(" cs_y %.1f ", coordonnee_y);
@@ -122,7 +122,7 @@ void asser_polaire_tick(float coordonnee_x, float coordonnee_y, float theta_cons
 
     // Serial.println();
 }
-
+/*
 void recalage()
 {
     static unsigned long last_time_droite = millis();
@@ -344,3 +344,206 @@ void recalage()
     // asservissement_roue_folle_droite_tick(consigne_position_droite, odo_tick_droit);
     // asservissement_roue_folle_gauche_tick(consigne_position_gauche, odo_tick_gauche);
 }
+*/
+/*
+void recalage(uint8_t marche_avant_arriere_ou_sans_bouger, uint8_t modification_x_ou_y_ou_attrape_objet_terrain, uint16_t nouvelle_valeur_x_ou_y, uint16_t consigne_rotation_recalage)
+{
+
+    static unsigned long last_time_asser = millis();
+
+    if (marche_avant_arriere_ou_sans_bouger == 0)
+    { // Cela signifie que je mets a jour mes données sans bouger
+    }
+    else if (marche_avant_arriere_ou_sans_bouger == 1)
+    { // Cela signifie je vais faire bouger le robot faire l'avant pour mettre a jour ma donnée
+        consigne_position_gauche = odo_tick_gauche + SPEED_NORMAL;
+        consigne_position_droite = odo_tick_droit + SPEED_NORMAL;
+
+        correction = asservissement_angle_correction(consigne_theta_prec, degrees(theta_robot));
+        // // Appliquer la correction à la consigne de vitesse
+        consigne_position_droite -= correction;
+        consigne_position_gauche += correction;
+    }
+    else if (marche_avant_arriere_ou_sans_bouger == 2)
+    { // Cela signifie je vais faire bouger le robot faire l'arriere pour mettre a jour ma donnée
+        consigne_position_gauche = odo_tick_gauche - SPEED_NORMAL;
+        consigne_position_droite = odo_tick_droit - SPEED_NORMAL;
+
+        correction = asservissement_angle_correction(consigne_theta_prec, degrees(theta_robot));
+        // // Appliquer la correction à la consigne de vitesse
+        consigne_position_droite -= correction;
+        consigne_position_gauche += correction;
+    }
+
+    if (modification_x_ou_y_ou_attrape_objet_terrain == 0)
+    { // On est dans le cas ou souhaiter forcer la rencontre avec les objets
+    }
+    else if (modification_x_ou_y_ou_attrape_objet_terrain == 1)
+    { // modification de la valeur en x
+        if (toucher_objet_solid())
+        {
+            odo_x = nouvelle_valeur_x_ou_y;
+        }
+    }
+    else if (modification_x_ou_y_ou_attrape_objet_terrain == 2)
+    { // modification de la valeur en y
+        if (toucher_objet_solid())
+        {
+            odo_y = nouvelle_valeur_x_ou_y;
+        }
+    }
+
+    if(consigne_rotation_recalage!=0)
+    {
+        Serial.printf("padajdlkaj");
+        liste.general_purpose = TYPE_DEPLACEMENT_ROTATION;
+        liste.angle = convert_angle_deg_to_tick(consigne_rotation_recalage);
+        liste.vitesse_croisiere = SPEED_NORMAL;
+        lauch_flag_asser_roue(true);
+
+    }
+    Serial.printf(" Odo x %.3f ", odo_x);
+    Serial.printf(" odo_y %.3f ", odo_y);
+    Serial.printf(" teheta %.3f ", degrees(theta_robot));
+    Serial.printf(" consigne_position_droite %.0f ", consigne_position_droite);
+    Serial.printf(" consigne_position_gauche %.0f ", consigne_position_gauche);
+    Serial.printf(" odo_tick_droit %.0f ", odo_tick_droit);
+    Serial.printf(" odo_tick_gauche %.0f ", odo_tick_gauche);
+}
+*/
+
+bool recalage(uint8_t direction, uint8_t type_modif, uint16_t nouvelle_valeur, uint16_t consigne_rotation)
+{
+    bool flag_modif_fait = false;
+    enum MouvementRecalage
+    {
+        IMMOBILE = 0,
+        AVANT = 1,
+        ARRIERE = 2
+    };
+
+    enum TypeModification
+    {
+        AUCUNE = 0,
+        MODIF_X = 1,
+        MODIF_Y = 2,
+        MODIF_THETA = 3
+    };
+    int8_t sens = 0;
+
+    // Machine à états pour le mouvement
+    switch (direction)
+    {
+    case IMMOBILE:
+        // Pas de mouvement , rien à faire ici
+        break;
+    case AVANT:
+    case ARRIERE:
+
+        sens = (direction == AVANT) ? 1 : -1; // condition ? valeur_si_vrai : valeur_si_faux;
+
+        consigne_position_gauche = odo_tick_gauche + sens * SPEED_NORMAL;
+        consigne_position_droite = odo_tick_droit + sens * SPEED_NORMAL;
+
+        correction = asservissement_angle_correction(consigne_theta_prec, degrees(theta_robot));
+        consigne_position_droite -= correction;
+        consigne_position_gauche += correction;
+        break;
+    }
+
+    // Mise à jour de l’odométrie si contact
+    if (toucher_objet_solid())
+    {
+        if (type_modif == MODIF_X)
+        {
+            // odo_x = convert_distance_mm_to_tick(nouvelle_valeur);
+            odo_x = nouvelle_valeur;
+            flag_modif_fait = true;
+            Serial.printf("modif effec x");
+            // delay( 2000);
+        }
+        else if (type_modif == MODIF_Y)
+        {
+            // odo_y = convert_distance_mm_to_tick(nouvelle_valeur);
+            odo_y = nouvelle_valeur;
+            flag_modif_fait = true;
+
+            Serial.printf("modif effec x");
+            // delay( 2000);
+
+        }
+    }
+    if (type_modif == MODIF_THETA)
+    {
+        theta_robot = radians(convert_angle_deg_to_tick(nouvelle_valeur));
+        consigne_theta_prec = convert_angle_deg_to_tick(nouvelle_valeur);
+    }
+
+    // Rotation demandée ?
+    if (consigne_rotation != 0)
+    {
+        Serial.printf("Déclenchement rotation\n");
+        liste.general_purpose = TYPE_DEPLACEMENT_ROTATION;
+        liste.angle = convert_angle_deg_to_tick(consigne_rotation);
+        liste.vitesse_croisiere = SPEED_NORMAL;
+        lauch_flag_asser_roue(true);
+    }
+
+    // Serial.printf(" Odo x %.3f ", odo_x);
+    // Serial.printf(" odo_y %.3f ", odo_y);
+    // Serial.printf(" teheta %.3f ", degrees(theta_robot));
+    // Serial.printf(" consigne_position_droite %.0f ", consigne_position_droite);
+    // Serial.printf(" consigne_position_gauche %.0f ", consigne_position_gauche);
+    // Serial.printf(" odo_tick_droit %.0f ", odo_tick_droit);
+    // Serial.printf(" odo_tick_gauche %.0f ", odo_tick_gauche);
+    // Serial.println();
+    return flag_modif_fait;
+}
+bool toucher_objet_solid()
+{
+
+    static unsigned long last_time_droite = millis();
+    static unsigned long last_time_gauche = millis();
+    static int last_odo_droite = odo_tick_droit;
+    static int last_odo_gauche = odo_tick_gauche;
+    const unsigned long timeout = 500; // Temps avant de détecter un blocage (ms)
+
+    static bool roue_droite_bloquer = false;
+    static bool roue_gauche_bloquer = false;
+
+    if (millis() - last_time_droite > timeout)
+    {
+        if (last_odo_droite == odo_tick_droit)
+        {
+            Serial.printf("R_D block");
+            roue_droite_bloquer = true;
+        }
+
+        last_odo_droite = odo_tick_droit;
+        last_time_droite = millis();
+    }
+
+    if (millis() - last_time_gauche > timeout)
+    {
+        if (last_odo_gauche == odo_tick_gauche)
+        {
+            Serial.printf("R_G block");
+            roue_gauche_bloquer = true;
+        }
+
+        last_odo_gauche = odo_tick_gauche;
+        last_time_gauche = millis();
+    }
+
+    if ((roue_gauche_bloquer == true) && (roue_droite_bloquer == true))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+
+
