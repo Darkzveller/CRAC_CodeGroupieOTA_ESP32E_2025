@@ -22,7 +22,7 @@ void controle(void *parameters)
         {
             Serial.printf("ordre donnerr  pfoekfa^kepfaêfkpa^fpka^fek \n");
             liste.general_purpose = TYPE_DEPLACEMENT_X_Y_POLAIRE;
-
+            
             liste.x_polaire = 200;
             liste.y_polaire = 200;
             flag_fin_mvt = false;
@@ -68,7 +68,7 @@ void controle(void *parameters)
 
             break;
         case TYPE_DEPLACEMENT_X_Y_POLAIRE:
-            Serial.printf(" TYPE_DEPLACEMENT_X_Y_POLAIRE ");
+            // Serial.printf(" TYPE_DEPLACEMENT_X_Y_POLAIRE ");
             asser_polaire_tick(liste.x_polaire, liste.y_polaire, 0, liste.nbr_passage = true);
 
             if (flag_fin_mvt)
@@ -109,8 +109,8 @@ void controle(void *parameters)
             break;
         }
 
-        asservissement_roue_folle_droite_tick(consigne_position_droite, odo_tick_droit);
-        asservissement_roue_folle_gauche_tick(consigne_position_gauche, odo_tick_gauche);
+         asservissement_roue_folle_droite_tick(consigne_position_droite, odo_tick_droit);
+         asservissement_roue_folle_gauche_tick(consigne_position_gauche, odo_tick_gauche);
         // Serial.println();
         // int time = 250;
         // int pwm = 2048*0.5;
