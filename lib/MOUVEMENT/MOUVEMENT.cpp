@@ -91,7 +91,7 @@ void asser_polaire_tick(float coordonnee_x, float coordonnee_y, float theta_cons
     if (compteur == 0)
     {
         float erreur_orient_deg = degrees(erreur_orient); // car convert_tick_to_angle_deg demande un tick normalement
-        if ((erreur_orient_deg > 90.0f) || (erreur_orient_deg < -90.0f))
+        if ((erreur_orient_deg > 90.0) || (erreur_orient_deg < -90.0))
         {
             sens = -1;
         }
@@ -156,8 +156,8 @@ void asser_polaire_tick(float coordonnee_x, float coordonnee_y, float theta_cons
     // Serial.printf(" theta %.3f ", degrees(theta_robot));
     // Serial.printf(" er_d %.3f ", convert_distance_tick_to_mm(erreur_distance));
     // Serial.printf(" er_o %.3f ", convert_tick_to_angle_deg(erreur_orient));
-            // Serial.printf(" consigne_position_droite %.0f ", consigne_position_droite);
-        // Serial.printf(" consigne_position_gauche %.0f ", consigne_position_gauche);
+    // Serial.printf(" consigne_position_droite %.0f ", consigne_position_droite);
+    // Serial.printf(" consigne_position_gauche %.0f ", consigne_position_gauche);
 
     Serial.println();
 }
