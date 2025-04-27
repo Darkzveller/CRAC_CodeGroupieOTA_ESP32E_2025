@@ -10,7 +10,7 @@
 #include "UART1.h"
 #include "USE_FUNCTION.h"
 #include "I2C_ESP32E.h"
-
+static int bgg = 0;
 void controle(void *parameters)
 {
     TickType_t xLastWakeTime;
@@ -18,6 +18,18 @@ void controle(void *parameters)
     while (1)
     {
         read_x_y_theta();
+        if (bgg == 0)
+        {
+            Serial.printf("ordre donnerr  pfoekfa^kepfaêfkpa^fpka^fek \n");
+            liste.general_purpose = TYPE_DEPLACEMENT_X_Y_POLAIRE;
+
+            liste.x_polaire = 200;
+            liste.y_polaire = 200;
+            flag_fin_mvt = false;
+            liste.nbr_passage = true;
+            bgg = 1;
+        }
+
         switch (liste.general_purpose)
         {
         case TYPE_DEPLACEMENT_LIGNE_DROITE:
@@ -56,7 +68,7 @@ void controle(void *parameters)
 
             break;
         case TYPE_DEPLACEMENT_X_Y_POLAIRE:
-            // Serial.printf(" TYPE_DEPLACEMENT_X_Y_POLAIRE ");
+            Serial.printf(" TYPE_DEPLACEMENT_X_Y_POLAIRE ");
             asser_polaire_tick(liste.x_polaire, liste.y_polaire, 0, liste.nbr_passage = true);
 
             if (flag_fin_mvt)
@@ -82,7 +94,7 @@ void controle(void *parameters)
                 // Serial.printf(" odo_tick_droit %.0f ", odo_tick_droit);
                 // Serial.printf(" odo_tick_gauche %.0f ", odo_tick_gauche);
                 // Serial.println();
-             }
+            }
             break;
 
         case TYPE_VIDE:
@@ -115,20 +127,7 @@ void controle(void *parameters)
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(Te));
     }
 }
-/*
-void odo(void *parameters)
-{
-    TickType_t xLastWakeTime;
-    xLastWakeTime = xTaskGetTickCount();
-    while (1)
-    {
 
-        read_x_y_theta();
-
-        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(Te));
-    }
-}
-*/
 void COMMUNICATION_WITH_BW16(void *parameters)
 {
     TickType_t xLastWakeTime;
@@ -136,18 +135,17 @@ void COMMUNICATION_WITH_BW16(void *parameters)
     while (1)
     {
         read_message_bw16();
-    // static int mlk = 0;
-    // if (mlk==0){
+        // static int mlk = 0;
+        // if (mlk==0){
 
-    //     mlk = 1;
-    //     liste.general_purpose = TYPE_DEPLACEMENT_RECALAGE;
-    //     liste.direction_recalage = 1;
-    //     liste.type_modif_x_y_theta_recalge_rien = 1;
-    //     liste.nouvelle_valeur_x_y_theta_rien = 300;
-    //     liste.consigne_rotation_recalge = 0;
+        //     mlk = 1;
+        //     liste.general_purpose = TYPE_DEPLACEMENT_RECALAGE;
+        //     liste.direction_recalage = 1;
+        //     liste.type_modif_x_y_theta_recalge_rien = 1;
+        //     liste.nouvelle_valeur_x_y_theta_rien = 300;
+        //     liste.consigne_rotation_recalge = 0;
 
-
-    // }
+        // }
         switch (rxMsg.id)
         {
 
@@ -250,7 +248,7 @@ void setup()
     Serial.begin(115200);
     // Serial.println("Booting with OTA"); // Message indiquant le démarrage avec OTA
     // Appel à la fonction de configuration OTA (non définie dans ce code, mais probablement ailleurs)
-    setupOTA();
+    // setupOTA();
     // Initialisation des moteurs
     setup_motors();
     stop_motors();
@@ -307,9 +305,9 @@ void loop()
 {
     if (flag_controle)
     {
-        Serial.printf(" Odo x %.3f ", odo_x);
-        Serial.printf(" odo_y %.3f ", odo_y);
-        Serial.printf(" teheta %.3f ", degrees(theta_robot));
+        // Serial.printf(" Odo x %.3f ", odo_x);
+        // Serial.printf(" odo_y %.3f ", odo_y);
+        // Serial.printf(" teheta %.3f ", degrees(theta_robot));
         // Serial.printf(" direction_recalage %d ", liste.direction_recalage);
         // Serial.printf(" type_modif_x_y_theta_recalge_rien %d ", liste.type_modif_x_y_theta_recalge_rien);
         // Serial.printf(" nouvelle_valeur_x_y_theta_rien %d ", liste.nouvelle_valeur_x_y_theta_rien);
@@ -335,7 +333,7 @@ void loop()
         // Serial.printf(" etat_x_y_theta x %d ", etat_x_y_theta);
         // Serial.print("Etat actuel : " + toStringG(etat_actuel_vit_roue_folle_gauche));
         // Serial.print(" " + toStringD(etat_actuel_vit_roue_folle_droite));
-        Serial.println();
+        // Serial.println();
         flag_controle = 0;
     }
 }
