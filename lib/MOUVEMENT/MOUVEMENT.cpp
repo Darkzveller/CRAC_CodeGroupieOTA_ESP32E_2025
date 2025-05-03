@@ -82,7 +82,7 @@ void asser_polaire_tick(float coordonnee_x, float coordonnee_y, float theta_cons
     erreur_distance = convert_distance_mm_to_tick(sqrt(pow(coordonnee_x - odo_x, 2) + pow(coordonnee_y - odo_y, 2)));
 
     // Calcul de l'orientation
-    erreur_orient = atan2(coordonnee_y - odo_y, coordonnee_x - odo_x) - theta_robot;
+    erreur_orient = atan2(coordonnee_x - odo_x, coordonnee_y - odo_y) - theta_robot;
     erreur_orient = normaliser_angle_rad(erreur_orient);
 
     // Serial.printf(" er_o_before %.3f ", convert_tick_to_angle_deg(convert_angle_radian_to_tick(erreur_orient)));
@@ -94,6 +94,8 @@ void asser_polaire_tick(float coordonnee_x, float coordonnee_y, float theta_cons
         if ((erreur_orient_deg > 90.0) || (erreur_orient_deg < -90.0))
         {
             sens = -1;
+        }else{
+            sens = 1;
         }
         compteur = 1;
     }
@@ -124,6 +126,7 @@ void asser_polaire_tick(float coordonnee_x, float coordonnee_y, float theta_cons
         flag_fin_mvt = true;
         calcul_decl_polaire_tick = false;
         compteur = 0;
+        sens = 1;
     }
     else if ((erreur_orient > convert_angle_deg_to_tick(20)) || (erreur_orient < convert_angle_deg_to_tick(-20))) // Gestion de la consigne de déplacement
 
