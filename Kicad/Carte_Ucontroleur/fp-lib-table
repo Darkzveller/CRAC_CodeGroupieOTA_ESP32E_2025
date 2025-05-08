@@ -9,4 +9,6 @@
   (lib (name "F303K8")(type "KiCad")(uri "${KIPRJMOD}/STM32 NUCLEO-F303K8/F303K8.pretty")(options "")(descr ""))
   (lib (name "LibTB6612FNG")(type "KiCad")(uri "${KIPRJMOD}/LibTB6612FNG/LibTB6612FNG.pretty")(options "")(descr ""))
   (lib (name "MT3608")(type "KiCad")(uri "${KIPRJMOD}/MT3608/MT3608.pretty")(options "")(descr ""))
+  (lib (name "NX3008NBK")(type "KiCad")(uri "${KIPRJMOD}/NX3008NBK")(options "")(descr ""))
+  (lib (name "PMEG2020AEA")(type "KiCad")(uri "${KIPRJMOD}/PMEG2020AEA")(options "")(descr ""))
 )

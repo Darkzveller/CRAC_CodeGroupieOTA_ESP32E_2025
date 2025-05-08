@@ -11,4 +11,6 @@
   (lib (name "LibTB6612FNG")(type "KiCad")(uri "${KIPRJMOD}/LibTB6612FNG/LibTB6612FNG.kicad_sym")(options "")(descr ""))
   (lib (name "MT3608")(type "KiCad")(uri "${KIPRJMOD}/MT3608/MT3608.kicad_sym")(options "")(descr ""))
   (lib (name "u3v40f12")(type "KiCad")(uri "${KIPRJMOD}/u3v40f12/u3v40f12.kicad_sym")(options "")(descr ""))
+  (lib (name "NX3008NBK")(type "KiCad")(uri "${KIPRJMOD}/NX3008NBK/NX3008NBK.kicad_sym")(options "")(descr ""))
+  (lib (name "PMEG2020AEA")(type "KiCad")(uri "${KIPRJMOD}/PMEG2020AEA/PMEG2020AEA.kicad_sym")(options "")(descr ""))
 )

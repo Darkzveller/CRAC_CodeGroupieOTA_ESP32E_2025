@@ -1,4 +1,4 @@
-24837758769927717
+24841250487621069
 3D
 SOP65P640X120-20N
 PW (R-PDSO-G20)
@@ -68914,6 +68914,13 @@ threaded screw
 0
 4
 1
+NX3008NBK
+SOT23-3
+
+
+0
+3
+3
 NetTie
 NetTie-2_SMD_Pad0.5mm
 Net tie, 2 pin, 0.5mm square SMD pads
@@ -70195,6 +70202,13 @@ DIL DIP PDIP 2.54mm 7.62mm 300mil
 0
 4
 4
+PMEG2020AEA
+DIO_BZX384-C30_115
+
+
+0
+2
+2
 Package_BGA
 Alliance_TFBGA-36_6x8mm_Layout6x8_P0.75mm
 Alliance TFBGA-36, NSMD, 6.0x8.0mm, 36 Ball, 6x8 Layout, 0.75mm Pitch, https://www.alliancememory.com/wp-content/uploads/pdf/AS6C1008_Mar_2023V1.2.pdf
