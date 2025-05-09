@@ -18,11 +18,11 @@ void controle(void *parameters)
     while (1)
     {
         read_x_y_theta();
-        if (bgg == 0)
+        /*if (bgg == 0)
         {
             Serial.printf("ordre donnerr  pfoekfa^kepfaêfkpa^fpka^fek \n");
             liste.general_purpose = TYPE_DEPLACEMENT_X_Y_POLAIRE;
-            
+
             liste.x_polaire = 200;
             liste.y_polaire = 200;
             flag_fin_mvt = false;
@@ -109,20 +109,9 @@ void controle(void *parameters)
             break;
         }
 
-         asservissement_roue_folle_droite_tick(consigne_position_droite, odo_tick_droit);
-         asservissement_roue_folle_gauche_tick(consigne_position_gauche, odo_tick_gauche);
-        // Serial.println();
-        // int time = 250;
-        // int pwm = 2048*0.5;
-        // moteur_droit(pwm, false);
-        // moteur_gauche(pwm,false);
-
-        // delay(time);
-        // Serial.printf("Mot \n");
-
-        // moteur_droit(pwm, true);
-        // moteur_gauche(pwm,true);
-        // delay(time);
+        asservissement_roue_folle_droite_tick(consigne_position_droite, odo_tick_droit);
+        asservissement_roue_folle_gauche_tick(consigne_position_gauche, odo_tick_gauche);
+        */
         flag_controle = 1;
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(Te));
     }
@@ -257,6 +246,8 @@ void setup()
     // Initialisation de l'UART1
     setupUART1(1000E3);
 
+    init_tof();
+
     // Boucle jusqu'à ce qu'un client soit connecté via le port série WiFi
     // while (!TelnetStream.available())
     // {
@@ -305,6 +296,8 @@ void loop()
 {
     if (flag_controle)
     {
+  read_tof();
+  Serial.println();
         // Serial.printf(" Odo x %.3f ", odo_x);
         // Serial.printf(" odo_y %.3f ", odo_y);
         // Serial.printf(" teheta %.3f ", degrees(theta_robot));
