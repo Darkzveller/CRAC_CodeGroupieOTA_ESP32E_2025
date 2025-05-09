@@ -1,5 +1,4 @@
 #include "Variable.h"
-float tension_bat = 13;
 // Définition des variables
 // Encodeur
 float perimetre_robot = M_PI * LARGEUR_ROBOT_mm;
@@ -46,7 +45,7 @@ Ordre_deplacement liste = {
 // Variable asservissement
 //************Asservissement ROUE FOLLE EN TICK */
 
-float coeff_P_roue_folle_tick_gauche = 30;
+float coeff_P_roue_folle_tick_gauche = 20;
 float coeff_D_roue_folle_tick_gauche = 0.25;
 float coeff_I_roue_folle_tick_gauche = 0.4;
 
@@ -194,7 +193,7 @@ float consigne_dist_polaire_tick_max = 130;
 float coeff_rot_polaire_tick = 0.25;
 float coeff_dist_polaire_tick = 1;
 float consigne_rot_polaire_tick = 0;
-float consigne_dist_polaire_tick = 0;
+float consigne_dist_polaire_tick = SPEED_ULTRA;
 
 float coeff_decc_distance_polaire_tick = 35;
 float distance_decl_polaire_tick = 0;
@@ -220,3 +219,10 @@ bool flag_fin_mvt = true;
 float courant=0;
 float tension =0;
 float puissance=0;
+float tension_bat_reference = 13;
+
+//*********** BUS I2C ******************* */
+// Mutex pour protéger le bus I²C
+SemaphoreHandle_t i2cMutex;
+
+boolean detect_obstacle = false;

@@ -94,7 +94,9 @@ void asser_polaire_tick(float coordonnee_x, float coordonnee_y, float theta_cons
         if ((erreur_orient_deg > 90.0) || (erreur_orient_deg < -90.0))
         {
             sens = -1;
-        }else{
+        }
+        else
+        {
             sens = 1;
         }
         compteur = 1;
@@ -148,8 +150,8 @@ void asser_polaire_tick(float coordonnee_x, float coordonnee_y, float theta_cons
     }
 
     // Commandes des moteurs
-    consigne_position_gauche = odo_tick_gauche + consigne_dist_polaire_tick + coeff_rot_polaire_tick * consigne_rot_polaire_tick;
-    consigne_position_droite = odo_tick_droit + consigne_dist_polaire_tick - coeff_rot_polaire_tick * consigne_rot_polaire_tick;
+    consigne_position_gauche = odo_tick_gauche + coeff_dist_polaire_tick * consigne_dist_polaire_tick + coeff_rot_polaire_tick * consigne_rot_polaire_tick;
+    consigne_position_droite = odo_tick_droit + coeff_dist_polaire_tick * consigne_dist_polaire_tick - coeff_rot_polaire_tick * consigne_rot_polaire_tick;
 
     // Debug Serial
     // Serial.printf(" cs_x %.1f ", coordonnee_x);
@@ -162,7 +164,7 @@ void asser_polaire_tick(float coordonnee_x, float coordonnee_y, float theta_cons
     // Serial.printf(" consigne_position_droite %.0f ", consigne_position_droite);
     // Serial.printf(" consigne_position_gauche %.0f ", consigne_position_gauche);
 
-    Serial.println();
+    // Serial.println();
 }
 
 bool recalage(uint8_t direction, uint8_t type_modif, uint16_t nouvelle_valeur, uint16_t consigne_rotation)

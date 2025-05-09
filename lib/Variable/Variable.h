@@ -2,7 +2,6 @@
 
 #ifndef Variable_H
 #define Variable_H
-extern float tension_bat;
 // Parametre FreeRTOS
 #define Te 2.5
 #define Tcan 10
@@ -12,14 +11,16 @@ extern float tension_bat;
 #define resolution_pwm 12
 #define POURCENT_MAX_PWM 1
 // Moteur droit
-#define PWM_1 33
-#define M1_INA 25
-#define M1_INB 26
+#define PWM_1 13
+#define M1_INA 27
+#define M1_INB 4
+
 #define channel_1 0
 // Moteur Gauche
-#define PWM_2 13
-#define M2_INA 4
-#define M2_INB 27
+#define PWM_2 33
+#define M2_INA 26
+#define M2_INB 25
+
 #define channel_2 1
 // Encodeur + Parametre physique du robot
 #define ENTRAXE 40.0
@@ -274,4 +275,10 @@ extern bool flag_fin_mvt;
 extern float courant;
 extern float tension;
 extern float puissance;
+extern float tension_bat_reference;
+//*********** BUS I2C ******************* */
+// Mutex pour protéger le bus I²C
+extern SemaphoreHandle_t i2cMutex;
+
+extern boolean detect_obstacle ;
 #endif

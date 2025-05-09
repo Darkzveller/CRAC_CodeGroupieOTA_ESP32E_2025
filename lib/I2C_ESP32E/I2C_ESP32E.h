@@ -4,4 +4,6 @@
 void read_tof();
 void init_tof();
 uint8_t scanI2C();
+
+void init_mutex();
 #endif

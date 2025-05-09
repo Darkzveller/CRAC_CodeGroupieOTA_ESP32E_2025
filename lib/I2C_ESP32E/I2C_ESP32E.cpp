@@ -4,13 +4,14 @@
 #include <Wire.h>
 #include <Vl53l0x.h>
 
-int mesures[2];
+int mesure_tof_save[2];
 Vl53l0x monCapteur[2];
 VL53L0X_RangingMeasurementData_t measure;
 
 #define NBR_TOF 2
 #define MAX_VALUE_DETECTION_TOF 300
 #define MIN_VALUE_DETECTION_TOF 30
+#define VALUE_DETECTION_OBSTACLE_TOF 170
 
 uint8_t offset_tof = 1;
 
@@ -76,19 +77,28 @@ void read_tof()
     for (int i = 0; i < NBR_TOF; i++)
     {
         monCapteur[i].performSingleRangingMeasurement(&measure);
-        mesures[i] = measure.RangeMilliMeter; // on range toutes les valeurs dans une liste
-        if (mesures[i] >= MAX_VALUE_DETECTION_TOF)
+        mesure_tof_save[i] = measure.RangeMilliMeter; // on range toutes les valeurs dans une liste
+        if (mesure_tof_save[i] >= MAX_VALUE_DETECTION_TOF)
         {
-            mesures[i] = MAX_VALUE_DETECTION_TOF;
+            mesure_tof_save[i] = MAX_VALUE_DETECTION_TOF;
         }
-        if (mesures[i] <= MIN_VALUE_DETECTION_TOF)
+        if (mesure_tof_save[i] <= MIN_VALUE_DETECTION_TOF)
         {
-            mesures[i] = 0;
+            mesure_tof_save[i] = 0;
         }
         Serial.printf(" Cpateur %d ", i);
-        Serial.print(mesures[i]); // on print les deux au cas où y ait une merde
+        Serial.print(mesure_tof_save[i]); // on print les deux au cas où y ait une merde
     }
-    // Serial.println();
+    if ((mesure_tof_save[0] > VALUE_DETECTION_OBSTACLE_TOF) && (mesure_tof_save[1] > VALUE_DETECTION_OBSTACLE_TOF))
+    {
+        detect_obstacle = true;
+    }
+    else
+    {
+        detect_obstacle = false;
+    }
+    Serial.printf(" detect_obstacle %d ", detect_obstacle);
+    Serial.println();
 }
 uint8_t scanI2C()
 {
@@ -108,4 +118,8 @@ uint8_t scanI2C()
             }
         }
     }
+}
+
+void init_mutex(){
+
 }
