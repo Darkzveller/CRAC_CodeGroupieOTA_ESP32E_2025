@@ -38,16 +38,14 @@ void init_tof()
         // Serial.println("Wire.endTransmission();");
 
         // delay(1000);
-        static uint8_t id_tof_actuelle = scanI2C();// Permettre 
+        static uint8_t id_tof_actuelle = scanI2C(); // Permettre
         // Serial.print("id_tof_actuelle ");
         Serial.println(id_tof_actuelle, HEX);
 
-        // if ( (id_tof_actuelle == 0x50) || (id_tof_actuelle == 0x51))
-                if  (id_tof_actuelle != 0x29) 
-
+        if (id_tof_actuelle != 0x29)
         {
-            Serial.printf("va,a ");
-            if (!monCapteur[i].begin(id_tof_actuelle+i, false))
+            Serial.printf("Condition id_tof_actuelle != 0x29 verifier");
+            if (!monCapteur[i].begin(id_tof_actuelle + i, false))
             {
                 delay(1000);                           // delay obligatoire pour lui laisser le temps de bien boot
                 monCapteur[i].changeAddress(0x50 + i); // on change l'adresse après le delay
@@ -56,7 +54,7 @@ void init_tof()
         }
         else if (!monCapteur[i].begin(0x29, false))
         {
-            Serial.printf("Le capteur %d a été initialiser\n", i);                  // on regarde si le démarrage est bon
+            Serial.printf("Le capteur %d a été initialiser\n", i); // on regarde si le démarrage est bon
             // delay(1000);                           // delay obligatoire pour lui laisser le temps de bien boot
             monCapteur[i].changeAddress(0x50 + i); // on change l'adresse après le delay
         }
@@ -92,7 +90,8 @@ void read_tof()
     }
     // Serial.println();
 }
-uint8_t scanI2C() {
+uint8_t scanI2C()
+{
     byte error, address;
     Serial.println("Scanning I2C...");
     for (address = 1; address < 127; address++)
