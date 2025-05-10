@@ -1,8 +1,10 @@
 #include <Arduino.h>
-#include "I2C_ESP32E.h"
 #include "Variable.h"
+#include "I2C_ESP32E.h"
 #include <Wire.h>
 #include <Vl53l0x.h>
+
+rgb_lcd lcd;
 
 int mesure_tof_save[2];
 Vl53l0x monCapteur[2];
@@ -14,7 +16,6 @@ VL53L0X_RangingMeasurementData_t measure;
 #define VALUE_DETECTION_OBSTACLE_TOF 170
 
 uint8_t offset_tof = 1;
-
 void init_tof()
 {
 
@@ -45,7 +46,7 @@ void init_tof()
 
         if (id_tof_actuelle != 0x29)
         {
-            Serial.printf("Condition id_tof_actuelle != 0x29 verifier");
+            Serial.printf("Condition id_tof_actuelle != 0x29 verifier\n");
             if (!monCapteur[i].begin(id_tof_actuelle + i, false))
             {
                 delay(1000);                           // delay obligatoire pour lui laisser le temps de bien boot
@@ -112,7 +113,7 @@ uint8_t scanI2C()
         {
             Serial.print("I2C device found at address 0x");
             Serial.println(address, HEX);
-            if ((address != 0x70) && (address != 0x7F))
+            if ((address != MULTIPLEXEUR) && (address != LECTURE_SIMULTANER_SDA1_SDA2) && (address != ID_RGB_LCD_GROOVE) && (address != ID_TXT_LCD_GROOVE))
             {
                 return address;
             }
@@ -120,6 +121,25 @@ uint8_t scanI2C()
     }
 }
 
-void init_mutex(){
+void init_lcd_groove(bool activate_wire)
+{
+    lcd.begin(16, 2, activate_wire);
+    lcd.setRGB(255, 0, 0);
+    lcd.setCursor(0, 0);
+    lcd.print("Init OK !");
+}
 
+void init_mutex(bool activate_mutex)
+{
+    // Initialisation du mutex
+    if (activate_mutex)
+    {
+        i2cMutex = xSemaphoreCreateMutex();
+        if (i2cMutex == NULL)
+        {
+            Serial.println("Erreur : création du mutex I2C échouée !");
+            while (1)
+                ;
+        }
+    }
 }

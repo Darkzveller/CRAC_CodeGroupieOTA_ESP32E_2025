@@ -278,7 +278,12 @@ extern float puissance;
 extern float tension_bat_reference;
 //*********** BUS I2C ******************* */
 // Mutex pour protéger le bus I²C
+#define ID_RGB_LCD_GROOVE 0x30
+#define ID_TXT_LCD_GROOVE 0x3E
+#define MULTIPLEXEUR 0x70
+#define LECTURE_SIMULTANER_SDA1_SDA2 0x7F
+
 extern SemaphoreHandle_t i2cMutex;
 
-extern boolean detect_obstacle ;
+extern boolean detect_obstacle;
 #endif

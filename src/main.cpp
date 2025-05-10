@@ -10,7 +10,8 @@
 #include "UART1.h"
 #include "USE_FUNCTION.h"
 #include "I2C_ESP32E.h"
-static int bgg = 0;
+
+static int bgg = 15;
 void controle(void *parameters)
 {
     TickType_t xLastWakeTime;
@@ -240,15 +241,9 @@ void tache_i2c(void *parameters)
     xLastWakeTime = xTaskGetTickCount();
     while (1)
     {
-        if (xSemaphoreTake(i2cMutex, portMAX_DELAY) == pdTRUE)
-        { // Prendre le mutex
-            Serial.printf(" Odo x %.3f ", odo_x);
-            Serial.printf(" odo_y %.3f ", odo_y);
-            Serial.printf(" teheta %.3f ", degrees(theta_robot));
-
-            read_tof();
-            xSemaphoreGive(i2cMutex); // Libérer le mutex
-        }
+        read_tof();
+  lcd.setCursor(0, 1);
+  lcd.print(millis() / 1000);
 
         flag_controle = 1;
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(Te));
@@ -270,24 +265,14 @@ void setup()
     setup_encodeur();
     // Initialisation de l'UART1
     setupUART1(1000E3);
-    i2cMutex = xSemaphoreCreateMutex();
-    if (i2cMutex == NULL)
-    {
-        Serial.println("Erreur : création du mutex I2C échouée !");
-        while (1)
-            ;
-    }
-
+    // Initialisation du MUTEX i2c
+    init_mutex(false);
+    // Initialisation des TOF
     init_tof();
+    // Initialisation du LCD
+    init_lcd_groove(false);
+    lcd.setRGB(255, 0, 255);
 
-    // Boucle jusqu'à ce qu'un client soit connecté via le port série WiFi
-    // while (!TelnetStream.available())
-    // {
-    //     delay(500);                                             // Attente de 500 ms avant de vérifier à nouveau
-    //     Serial.println("Aucun client connecté, en attente..."); // Message indiquant qu'il n'y a pas de client connecté
-    // }
-    // delay(10000);
-    // affichage_commande_wifi();
     Serial.println("on commence");
 
     // Serial.printf("avncement_gauche enter : %.0f\n", avncement_gauche);
