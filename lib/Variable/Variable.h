@@ -240,6 +240,7 @@ extern bool calcul_decl_polaire_tick;
 //***********LOOP******************* */
 
 extern bool flag_controle;
+extern bool stop_start_match_star;
 
 //***********CAN******************* */
 
@@ -283,7 +284,12 @@ extern float tension_bat_reference;
 #define MULTIPLEXEUR 0x70
 #define LECTURE_SIMULTANER_SDA1_SDA2 0x7F
 
+extern int mesure_tof_save[2];
+
 extern SemaphoreHandle_t i2cMutex;
 
 extern boolean detect_obstacle;
+// Moteur pour faire la star
+#define PIN_MOTEUR_STAR 32
+
 #endif

@@ -204,6 +204,7 @@ bool calcul_decl_polaire_tick = false;
 //***********Loop******************* */
 
 bool flag_controle = false;
+bool stop_start_match_star = false;
 
 //***********CAN******************* */
 
@@ -223,6 +224,7 @@ float tension_bat_reference = 13;
 
 //*********** BUS I2C ******************* */
 // Mutex pour protéger le bus I²C
+int mesure_tof_save[2];
 SemaphoreHandle_t i2cMutex;
 
 boolean detect_obstacle = false;

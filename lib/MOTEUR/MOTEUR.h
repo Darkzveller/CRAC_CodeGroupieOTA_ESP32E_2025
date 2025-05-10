@@ -17,4 +17,6 @@ void freinage_moteur_droit(bool on_off, int Vmax_consigne);
 
 void moteur_droit_polaire(int pwm);
 void moteur_gauche_polaire(int pwm);
+
+void start_stop_moteur_star(bool activate);
 #endif

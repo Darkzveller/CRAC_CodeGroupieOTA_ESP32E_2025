@@ -6,14 +6,13 @@
 
 rgb_lcd lcd;
 
-int mesure_tof_save[2];
 Vl53l0x monCapteur[2];
 VL53L0X_RangingMeasurementData_t measure;
 
 #define NBR_TOF 2
 #define MAX_VALUE_DETECTION_TOF 300
 #define MIN_VALUE_DETECTION_TOF 30
-#define VALUE_DETECTION_OBSTACLE_TOF 170
+#define VALUE_DETECTION_OBSTACLE_TOF 200
 
 uint8_t offset_tof = 1;
 void init_tof()
@@ -87,9 +86,10 @@ void read_tof()
         {
             mesure_tof_save[i] = 0;
         }
-        Serial.printf(" Cpateur %d ", i);
-        Serial.print(mesure_tof_save[i]); // on print les deux au cas où y ait une merde
+        // Serial.printf(" Cpateur %d ", i);
+        // Serial.print(mesure_tof_save[i]); // on print les deux au cas où y ait une merde
     }
+    //      400                         200                         150                       200
     if ((mesure_tof_save[0] > VALUE_DETECTION_OBSTACLE_TOF) && (mesure_tof_save[1] > VALUE_DETECTION_OBSTACLE_TOF))
     {
         detect_obstacle = true;
@@ -98,8 +98,8 @@ void read_tof()
     {
         detect_obstacle = false;
     }
-    Serial.printf(" detect_obstacle %d ", detect_obstacle);
-    Serial.println();
+    // Serial.printf(" detect_obstacle %d ", detect_obstacle);
+    // Serial.println();
 }
 uint8_t scanI2C()
 {
@@ -127,6 +127,8 @@ void init_lcd_groove(bool activate_wire)
     lcd.setRGB(255, 0, 0);
     lcd.setCursor(0, 0);
     lcd.print("Init OK !");
+    lcd.clear();
+    lcd.setRGB(255, 0, 255);
 }
 
 void init_mutex(bool activate_mutex)

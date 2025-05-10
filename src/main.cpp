@@ -11,7 +11,6 @@
 #include "USE_FUNCTION.h"
 #include "I2C_ESP32E.h"
 
-static int bgg = 15;
 void controle(void *parameters)
 {
     TickType_t xLastWakeTime;
@@ -22,17 +21,6 @@ void controle(void *parameters)
 
         if (detect_obstacle)
         {
-            if (bgg == 0)
-            {
-                Serial.printf("ordre donnerr  pfoekfa^kepfaêfkpa^fpka^fek \n");
-                liste.general_purpose = TYPE_DEPLACEMENT_X_Y_POLAIRE;
-
-                liste.x_polaire = -200;
-                liste.y_polaire = -200;
-                flag_fin_mvt = false;
-                liste.nbr_passage = true;
-                bgg = 1;
-            }
 
             switch (liste.general_purpose)
             {
@@ -113,33 +101,23 @@ void controle(void *parameters)
                 break;
             }
         }
-
-        asservissement_roue_folle_droite_tick(consigne_position_droite, odo_tick_droit);
-        asservissement_roue_folle_gauche_tick(consigne_position_gauche, odo_tick_gauche);
-
+        if (!stop_start_match_star)
+        {
+            asservissement_roue_folle_droite_tick(consigne_position_droite, odo_tick_droit);
+            asservissement_roue_folle_gauche_tick(consigne_position_gauche, odo_tick_gauche);
+        }
         flag_controle = 1;
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(Te));
     }
 }
 
-void COMMUNICATION_WITH_BW16(void *parameters)
+void comm_avec_bw16(void *parameters)
 {
     TickType_t xLastWakeTime;
     xLastWakeTime = xTaskGetTickCount();
     while (1)
     {
         read_message_bw16();
-        // static int mlk = 0;
-        // if (mlk==0){
-
-        //     mlk = 1;
-        //     liste.general_purpose = TYPE_DEPLACEMENT_RECALAGE;
-        //     liste.direction_recalage = 1;
-        //     liste.type_modif_x_y_theta_recalge_rien = 1;
-        //     liste.nouvelle_valeur_x_y_theta_rien = 300;
-        //     liste.consigne_rotation_recalge = 0;
-
-        // }
         switch (rxMsg.id)
         {
 
@@ -224,6 +202,13 @@ void COMMUNICATION_WITH_BW16(void *parameters)
             Serial.println();
 
             break;
+        case STOP_ROBOT_FIN_MATCH:
+            stop_start_match_star = true;
+            break;
+        case START_ROBOT_MATCH:
+            stop_start_match_star = false;
+            break;
+
         case 0:
             break;
 
@@ -242,8 +227,14 @@ void tache_i2c(void *parameters)
     while (1)
     {
         read_tof();
-  lcd.setCursor(0, 1);
-  lcd.print(millis() / 1000);
+        lcd.setCursor(0, 0);
+        lcd.printf("x%3.0fy%3.0ft%3.0fS%1dD%1d", odo_x, odo_y, degrees(theta_robot), stop_start_match_star, detect_obstacle);
+
+        lcd.setCursor(7, 1);
+        lcd.printf("TG%3dD%3d", mesure_tof_save[0], mesure_tof_save[1]);
+        start_stop_moteur_star(stop_start_match_star);
+        // Serial.printf("stop_start_match_star %d", stop_start_match_star);
+        // Serial.println();
 
         flag_controle = 1;
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(Te));
@@ -271,7 +262,6 @@ void setup()
     init_tof();
     // Initialisation du LCD
     init_lcd_groove(false);
-    lcd.setRGB(255, 0, 255);
 
     Serial.println("on commence");
 
@@ -299,12 +289,12 @@ void setup()
         NULL         // descripteur
     );
     xTaskCreate(
-        COMMUNICATION_WITH_BW16,   // nom de la fonction
-        "COMMUNICATION_WITH_BW16", // nom de la tache que nous venons de vréer
-        10000,                     // taille de la pile en octet
-        NULL,                      // parametre
-        9,                         // tres haut niveau de priorite
-        NULL                       // descripteur
+        comm_avec_bw16,   // nom de la fonction
+        "comm_avec_bw16", // nom de la tache que nous venons de vréer
+        10000,            // taille de la pile en octet
+        NULL,             // parametre
+        9,                // tres haut niveau de priorite
+        NULL              // descripteur
     );
 }
 

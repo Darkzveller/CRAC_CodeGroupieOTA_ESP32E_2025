@@ -151,3 +151,10 @@ void moteur_gauche_polaire(int pwm)
     }
     ledcWrite(channel_2, fabs(pwm));
 }
+
+void start_stop_moteur_star(bool activate){
+
+    pinMode(PIN_MOTEUR_STAR,OUTPUT);
+    digitalWrite(PIN_MOTEUR_STAR,activate);
+}
+
